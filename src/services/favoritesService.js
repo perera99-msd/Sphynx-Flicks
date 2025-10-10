@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { AuthService } from './authService';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://backend.msdperera99.workers.dev/api';
 
 const getAuthHeader = () => {
   const token = AuthService.getToken();

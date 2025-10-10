@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Change this to your local backend
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://backend.msdperera99.workers.dev/api';
 
 const convertGenreIdsToNames = (movies, genres) => {
   return movies.map(movie => ({
