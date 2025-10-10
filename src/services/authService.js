@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // For local development - use your worker URL
-const API_BASE_URL = 'http://localhost:8787/api';
+const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
 
 // For production - use your deployed worker URL
 // const API_BASE_URL = 'https://your-worker.workers.dev/api';
