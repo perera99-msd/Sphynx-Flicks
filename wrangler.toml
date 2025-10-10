@@ -2,7 +2,10 @@ name = "movie-app-backend"
 compatibility_date = "2023-10-01"
 main = "worker.js"
 
-[[kv_namespaces]]
-binding = "MOVIE_APP"
-id = "ae9e7aa818cd45c08e8538140f60d1af"
-preview_id = "7b6c3f0df5e0455a9b7f3028354d83e0"
+[[d1_databases]]
+binding = "DB"
+database_name = "movie-app-db"
+database_id = "93cfcbcb-6e39-4f40-92d4-b7b7c4048fae"
+
+[vars]
+JWT_SECRET = "your-jwt-secret-key-here-change-in-production"

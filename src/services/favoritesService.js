@@ -1,7 +1,11 @@
 // src/services/favoritesService.js
 import axios from 'axios';
 
+// Replace with your actual worker URL after deployment
 const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
+
+// For local testing during development
+// const API_BASE_URL = 'http://localhost:8787/api';
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
