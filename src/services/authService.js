@@ -1,7 +1,7 @@
 // src/services/authService.js
 import axios from 'axios';
 
-// Use your Cloudflare Worker backend URL (HTTPS)
+// Use HTTPS URL for your Cloudflare Worker backend
 const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
 
 export const AuthService = {
