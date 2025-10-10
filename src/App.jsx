@@ -16,49 +16,7 @@ import './App.css';
 
 const HERO_MOVIES_COUNT = 5;
 const MOVIES_PER_PAGE = 20;
-// Add this to your App.jsx useEffect
-useEffect(() => {
-  const initializeApp = async () => {
-    setLoading(true);
-    try {
-      // Test backend connection first
-      const isBackendAlive = await testBackendConnection();
-      if (!isBackendAlive) {
-        setError('Backend service is unavailable. Please try again later.');
-        setLoading(false);
-        return;
-      }
 
-      // Load genres first
-      const genresData = await MovieService.getGenres();
-      setGenres(genresData);
-      
-      // Load initial movies
-      await loadMovies(1);
-      
-      // Check for authenticated user
-      const token = AuthService.getToken();
-      if (token) {
-        try {
-          const userData = await AuthService.verifyToken(token);
-          setUser(userData.user);
-          setFavorites(userData.favorites || []);
-          setWatchHistory(userData.watchHistory || []);
-        } catch (error) {
-          console.error('Token verification failed:', error);
-          AuthService.logout();
-        }
-      }
-    } catch (error) {
-      console.error('Error initializing app:', error);
-      setError('Failed to load movies. Please check your connection.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  initializeApp();
-}, []);
 // Main App Content Component
 const AppContent = () => {
   const { user, logout, favorites, watchHistory, updateFavorites, addToWatchHistory } = useAuth();
