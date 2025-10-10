@@ -1,20 +1,26 @@
 // src/components/UserProfile/UserProfile.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../../contexts/AuthContext';
-import { FavoritesService } from '../../../services/favoritesService';
+import { useAuth } from '../../contexts/AuthContext';
+import { FavoritesService } from '../../services/favoritesService';
 import './UserProfile.css';
 
-const UserProfile = ({ onMovieClick }) => {
+const UserProfile = ({ onMovieClick, onToggleFavorite }) => {
   const { user, favorites, watchHistory, updateFavorites } = useAuth();
 
   const handleToggleFavorite = async (movie) => {
     try {
-      const result = await FavoritesService.toggleFavorite(movie);
-      updateFavorites(result.favorites);
+      const isCurrentlyFavorite = favorites.some(fav => fav.id === movie.id);
+      
+      if (isCurrentlyFavorite) {
+        await FavoritesService.removeFavorite(movie.id);
+        updateFavorites(favorites.filter(fav => fav.id !== movie.id));
+      } else {
+        await FavoritesService.addFavorite(movie);
+        updateFavorites([...favorites, movie]);
+      }
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      alert(error.message);
     }
   };
 

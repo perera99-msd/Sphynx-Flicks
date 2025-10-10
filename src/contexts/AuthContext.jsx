@@ -24,8 +24,8 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
+    const token = AuthService.getToken();
+    const savedUser = AuthService.getUser();
     
     if (token && savedUser) {
       try {

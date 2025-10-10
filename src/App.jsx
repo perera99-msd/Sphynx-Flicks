@@ -1,6 +1,7 @@
 // src/App.jsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Header from './components/Header/Header';
 import Hero from './components/Hero/Hero';
 import MovieGrid from './components/MovieGrid/MovieGrid';
@@ -10,14 +11,15 @@ import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
 import AuthModal from './components/AuthModal/AuthModal';
 import UserProfile from './components/UserProfile/UserProfile';
 import { MovieService } from './services/movieService';
-import { AuthService } from './services/authService';
 import { FavoritesService } from './services/favoritesService';
 import './App.css';
 
 const HERO_MOVIES_COUNT = 5;
 const MOVIES_PER_PAGE = 20;
 
-function App() {
+// Main App Content Component
+const AppContent = () => {
+  const { user, logout, favorites, watchHistory, updateFavorites, addToWatchHistory } = useAuth();
   const [movies, setMovies] = useState([]);
   const [heroMovies, setHeroMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -25,11 +27,8 @@ function App() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ genre: '', year: '', rating: '' });
-  const [user, setUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
-  const [favorites, setFavorites] = useState([]);
-  const [watchHistory, setWatchHistory] = useState([]);
   const [activeView, setActiveView] = useState('discover');
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreMovies, setHasMoreMovies] = useState(true);
@@ -47,25 +46,6 @@ function App() {
         
         // Load initial movies
         await loadMovies(1);
-        
-        // Check for authenticated user from localStorage
-        const token = AuthService.getToken();
-        const savedUser = AuthService.getUser();
-        
-        if (token && savedUser) {
-          try {
-            const userData = await AuthService.verifyToken(token);
-            setUser(userData.user);
-            setFavorites(userData.favorites || []);
-            setWatchHistory(userData.watchHistory || []);
-          } catch (error) {
-            console.error('Token verification failed:', error);
-            AuthService.logout();
-            setUser(null);
-            setFavorites([]);
-            setWatchHistory([]);
-          }
-        }
       } catch (error) {
         console.error('Error initializing app:', error);
         setError('Failed to load movies. Please check your connection.');
@@ -157,10 +137,7 @@ function App() {
         try {
           await FavoritesService.recordWatch(detailedMovie);
           // Update local watch history
-          setWatchHistory(prev => [
-            { ...detailedMovie, watched_at: new Date().toISOString() },
-            ...prev.slice(0, 49)
-          ]);
+          addToWatchHistory({ ...detailedMovie, watched_at: new Date().toISOString() });
         } catch (error) {
           console.error('Error recording watch history:', error);
         }
@@ -170,7 +147,7 @@ function App() {
       // Fallback to basic movie data if details fail
       setSelectedMovie(movie);
     }
-  }, [user]);
+  }, [user, addToWatchHistory]);
 
   const handleCloseModal = useCallback(() => {
     setSelectedMovie(null);
@@ -200,13 +177,7 @@ function App() {
         ? await AuthService.login(credentials)
         : await AuthService.register(credentials);
       
-      setUser(result.user);
-      setFavorites(result.favorites || []);
-      setWatchHistory(result.watchHistory || []);
       setShowAuthModal(false);
-      
-      // Switch to discover view after login
-      setActiveView('discover');
       return result;
     } catch (error) {
       throw error;
@@ -214,10 +185,7 @@ function App() {
   };
 
   const handleLogout = () => {
-    AuthService.logout();
-    setUser(null);
-    setFavorites([]);
-    setWatchHistory([]);
+    logout();
     setActiveView('discover');
     setSearchQuery('');
     setFilters({ genre: '', year: '', rating: '' });
@@ -237,10 +205,10 @@ function App() {
       
       if (isCurrentlyFavorite) {
         await FavoritesService.removeFavorite(movie.id);
-        setFavorites(prev => prev.filter(fav => fav.id !== movie.id));
+        updateFavorites(favorites.filter(fav => fav.id !== movie.id));
       } else {
         await FavoritesService.addFavorite(movie);
-        setFavorites(prev => [...prev, movie]);
+        updateFavorites([...favorites, movie]);
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -450,6 +418,15 @@ function App() {
       </AnimatePresence>
     </div>
   );
-}
+};
+
+// Main App Component with AuthProvider
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+};
 
 export default App;
