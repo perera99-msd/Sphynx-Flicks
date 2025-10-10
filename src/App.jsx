@@ -1,7 +1,6 @@
 // src/App.jsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Header from './components/Header/Header';
 import Hero from './components/Hero/Hero';
 import MovieGrid from './components/MovieGrid/MovieGrid';
@@ -11,15 +10,14 @@ import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
 import AuthModal from './components/AuthModal/AuthModal';
 import UserProfile from './components/UserProfile/UserProfile';
 import { MovieService } from './services/movieService';
+import { AuthService } from './services/authService';
 import { FavoritesService } from './services/favoritesService';
 import './App.css';
 
 const HERO_MOVIES_COUNT = 5;
 const MOVIES_PER_PAGE = 20;
 
-// Main App Content Component
-const AppContent = () => {
-  const { user, logout, favorites, watchHistory, updateFavorites, addToWatchHistory } = useAuth();
+function App() {
   const [movies, setMovies] = useState([]);
   const [heroMovies, setHeroMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -27,15 +25,39 @@ const AppContent = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ genre: '', year: '', rating: '' });
+  const [user, setUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+  const [favorites, setFavorites] = useState([]);
+  const [watchHistory, setWatchHistory] = useState([]);
   const [activeView, setActiveView] = useState('discover');
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreMovies, setHasMoreMovies] = useState(true);
   const [genres, setGenres] = useState([]);
   const [error, setError] = useState(null);
 
-  // Initialize app
+  // Add getGenreNames function
+  const getGenreNames = useCallback((movie) => {
+    if (movie.genre_names && movie.genre_names.length > 0) {
+      return movie.genre_names;
+    }
+    
+    if (movie.genres && movie.genres.length > 0) {
+      return movie.genres.map(g => g.name || g);
+    }
+    
+    if (movie.genre_ids && movie.genre_ids.length > 0 && genres.length > 0) {
+      const genreNames = movie.genre_ids.map(genreId => {
+        const genre = genres.find(g => g.id === genreId);
+        return genre ? genre.name : 'Unknown';
+      }).filter(name => name !== 'Unknown');
+      
+      return genreNames;
+    }
+    
+    return [];
+  }, [genres]);
+
   useEffect(() => {
     const initializeApp = async () => {
       setLoading(true);
@@ -46,6 +68,23 @@ const AppContent = () => {
         
         // Load initial movies
         await loadMovies(1);
+        
+        // Check for authenticated user
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const userData = await AuthService.verifyToken(token);
+            setUser(userData.user);
+            setFavorites(userData.favorites || []);
+            setWatchHistory(userData.watchHistory || []);
+          } catch (error) {
+            console.error('Token verification failed:', error);
+            localStorage.removeItem('token');
+            setUser(null);
+            setFavorites([]);
+            setWatchHistory([]);
+          }
+        }
       } catch (error) {
         console.error('Error initializing app:', error);
         setError('Failed to load movies. Please check your connection.');
@@ -107,12 +146,11 @@ const AppContent = () => {
     
     return moviesToFilter.filter(movie => {
       const searchMatch = searchQuery
-        ? movie.title?.toLowerCase().includes(searchQuery.toLowerCase())
+        ? movie.title.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
       const genreMatch = filters.genre
-        ? movie.genre_ids?.includes(parseInt(filters.genre)) || 
-          movie.genre_names?.some(name => name.toLowerCase().includes(filters.genre.toLowerCase()))
+        ? movie.genre_ids?.includes(parseInt(filters.genre))
         : true;
       
       const yearMatch = filters.year
@@ -131,23 +169,12 @@ const AppContent = () => {
     try {
       const detailedMovie = await MovieService.getMovieDetails(movie.id, movie.source);
       setSelectedMovie(detailedMovie);
-      
-      // Record watch history if user is logged in
-      if (user) {
-        try {
-          await FavoritesService.recordWatch(detailedMovie);
-          // Update local watch history
-          addToWatchHistory({ ...detailedMovie, watched_at: new Date().toISOString() });
-        } catch (error) {
-          console.error('Error recording watch history:', error);
-        }
-      }
     } catch (error) {
       console.error(`Error loading details for movie ${movie.id}:`, error);
       // Fallback to basic movie data if details fail
       setSelectedMovie(movie);
     }
-  }, [user, addToWatchHistory]);
+  }, []);
 
   const handleCloseModal = useCallback(() => {
     setSelectedMovie(null);
@@ -177,15 +204,24 @@ const AppContent = () => {
         ? await AuthService.login(credentials)
         : await AuthService.register(credentials);
       
+      setUser(result.user);
+      setFavorites(result.favorites || []);
+      setWatchHistory(result.watchHistory || []);
+      localStorage.setItem('token', result.token);
       setShowAuthModal(false);
-      return result;
+      
+      // Switch to discover view after login
+      setActiveView('discover');
     } catch (error) {
       throw error;
     }
   };
 
   const handleLogout = () => {
-    logout();
+    setUser(null);
+    setFavorites([]);
+    setWatchHistory([]);
+    localStorage.removeItem('token');
     setActiveView('discover');
     setSearchQuery('');
     setFilters({ genre: '', year: '', rating: '' });
@@ -196,7 +232,6 @@ const AppContent = () => {
   const toggleFavorite = async (movie) => {
     if (!user) {
       setShowAuthModal(true);
-      setAuthMode('login');
       return;
     }
 
@@ -205,18 +240,32 @@ const AppContent = () => {
       
       if (isCurrentlyFavorite) {
         await FavoritesService.removeFavorite(movie.id);
-        updateFavorites(favorites.filter(fav => fav.id !== movie.id));
+        setFavorites(prev => prev.filter(fav => fav.id !== movie.id));
       } else {
         await FavoritesService.addFavorite(movie);
-        updateFavorites([...favorites, movie]);
+        setFavorites(prev => [...prev, movie]);
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      // If there's an error, show auth modal (token might be expired)
-      if (error.response?.status === 401) {
-        setShowAuthModal(true);
-        setAuthMode('login');
-      }
+    }
+  };
+
+  const recordWatch = async (movieId) => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    try {
+      await FavoritesService.recordWatch(movieId);
+      // Update local watch history
+      const historyItem = await MovieService.getMovieDetails(movieId); // Ensure MovieService is used
+      setWatchHistory(prev => [
+        { ...historyItem, watched_at: new Date().toISOString() },
+        ...prev.filter(item => item.id !== historyItem.id).slice(0, 49) // Avoid duplicates
+      ]);
+    } catch (error) {
+      console.error('Error recording watch:', error);
     }
   };
 
@@ -233,38 +282,13 @@ const AppContent = () => {
     }
   };
 
-  // Get genre names for movies
-  const getGenreNames = useCallback((movie) => {
-    if (movie.genre_names && movie.genre_names.length > 0) {
-      return movie.genre_names;
-    }
-    
-    if (movie.genres && movie.genres.length > 0) {
-      return movie.genres.map(g => g.name || g);
-    }
-    
-    if (movie.genre_ids && movie.genre_ids.length > 0 && genres.length > 0) {
-      const genreNames = movie.genre_ids.map(genreId => {
-        const genre = genres.find(g => g.id === genreId);
-        return genre ? genre.name : 'Unknown';
-      }).filter(name => name !== 'Unknown');
-      
-      return genreNames;
-    }
-    
-    return [];
-  }, [genres]);
-
   return (
     <div className="app">
       <Header 
         onSearch={handleSearch}
         searchQuery={searchQuery}
         user={user}
-        onAuthClick={() => {
-          setShowAuthModal(true);
-          setAuthMode('login');
-        }}
+        onAuthClick={() => setShowAuthModal(true)}
         onLogout={handleLogout}
         activeView={activeView}
         onViewChange={handleViewChange}
@@ -279,11 +303,7 @@ const AppContent = () => {
               onMovieClick={handleMovieClick}
               isLoading={loading}
               user={user}
-              onWatchTrailer={(movie) => {
-                if (user && movie) {
-                  FavoritesService.recordWatch(movie).catch(console.error);
-                }
-              }}
+              onWatchTrailer={recordWatch}
             />
             
             <FilterSection 
@@ -305,13 +325,6 @@ const AppContent = () => {
           />
         )}
         
-        {activeView === 'favorites' && (
-          <div className="favorites-header">
-            <h2>Your Favorite Movies</h2>
-            <p>{favorites.length} movies in your collection</p>
-          </div>
-        )}
-
         {error && (
           <div className="error-message">
             <h3>⚠️ {error}</h3>
@@ -319,16 +332,16 @@ const AppContent = () => {
           </div>
         )}
 
-        {loading ? (
+        {loading && !loadingMore ? (
           <LoadingSpinner />
         ) : (
           <AnimatePresence mode="wait">
             <motion.div
               key={`${activeView}-${searchQuery}-${JSON.stringify(filters)}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
             >
               <MovieGrid
                 movies={filteredMovies}
@@ -337,11 +350,12 @@ const AppContent = () => {
                 favorites={favorites}
                 user={user}
                 activeView={activeView}
+                genres={genres}
                 getGenreNames={getGenreNames}
               />
               
-              {/* Load More Button - Only show for discover view with no active search/filters */}
-              {activeView === 'discover' && hasMoreMovies && !searchQuery && Object.values(filters).every(val => !val) && (
+              {/* Load More Button */}
+              {activeView === 'discover' && hasMoreMovies && !searchQuery && filteredMovies.length > 0 && (
                 <div className="load-more-container">
                   <button 
                     className="load-more-btn"
@@ -354,34 +368,13 @@ const AppContent = () => {
               )}
 
               {loadingMore && (
-                <div className="loading-more">
                   <LoadingSpinner />
-                </div>
               )}
 
-              {filteredMovies.length === 0 && !loading && (
+              {filteredMovies.length === 0 && !loading && !error && (
                 <div className="no-results">
-                  <h3>
-                    {activeView === 'favorites' ? 'No favorite movies yet' : 
-                     activeView === 'profile' ? 'No movies to display' : 
-                     'No movies found'}
-                  </h3>
-                  <p>
-                    {activeView === 'favorites' ? 'Start adding movies to your favorites!' : 
-                     activeView === 'profile' ? 'Your watch history and favorites will appear here' : 
-                     'Try adjusting your search or filters.'}
-                  </p>
-                  {activeView === 'favorites' && !user && (
-                    <button 
-                      className="auth-prompt-btn"
-                      onClick={() => {
-                        setShowAuthModal(true);
-                        setAuthMode('login');
-                      }}
-                    >
-                      Log in to add favorites
-                    </button>
-                  )}
+                  <h3>No movies found</h3>
+                  <p>Try adjusting your search or filters to find what you're looking for.</p>
                 </div>
               )}
             </motion.div>
@@ -395,11 +388,7 @@ const AppContent = () => {
             movie={selectedMovie}
             onClose={handleCloseModal}
             onToggleFavorite={toggleFavorite}
-            onWatchTrailer={(movie) => {
-              if (user && movie) {
-                FavoritesService.recordWatch(movie).catch(console.error);
-              }
-            }}
+            onWatchTrailer={recordWatch}
             isFavorite={favorites.some(fav => fav.id === selectedMovie.id)}
             user={user}
           />
@@ -418,15 +407,6 @@ const AppContent = () => {
       </AnimatePresence>
     </div>
   );
-};
-
-// Main App Component with AuthProvider
-const App = () => {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  );
-};
+}
 
 export default App;

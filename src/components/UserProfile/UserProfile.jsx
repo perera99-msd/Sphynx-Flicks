@@ -1,127 +1,113 @@
 // src/components/UserProfile/UserProfile.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../contexts/AuthContext';
-import { FavoritesService } from '../../services/favoritesService';
+import { FiStar, FiCalendar, FiHeart, FiEye } from 'react-icons/fi';
 import './UserProfile.css';
 
-const UserProfile = ({ onMovieClick, onToggleFavorite }) => {
-  const { user, favorites, watchHistory, updateFavorites } = useAuth();
+const UserProfile = ({ user, favorites, watchHistory, onMovieClick, onToggleFavorite }) => {
+  const getReleaseYear = (date) => (date ? new Date(date).getFullYear() : 'N/A');
 
-  const handleToggleFavorite = async (movie) => {
-    try {
-      const isCurrentlyFavorite = favorites.some(fav => fav.id === movie.id);
-      
-      if (isCurrentlyFavorite) {
-        await FavoritesService.removeFavorite(movie.id);
-        updateFavorites(favorites.filter(fav => fav.id !== movie.id));
-      } else {
-        await FavoritesService.addFavorite(movie);
-        updateFavorites([...favorites, movie]);
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
     }
   };
 
-  if (!user) {
-    return (
-      <div className="user-profile">
-        <div className="not-logged-in">
-          <h2>Please log in to view your profile</h2>
-          <p>You need to be logged in to see your favorites and watch history.</p>
-        </div>
-      </div>
-    );
-  }
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
 
   return (
-    <div className="user-profile">
-      <div className="profile-header">
-        <motion.div
-          className="profile-avatar"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2 }}
-        >
+    <motion.div
+      className="user-profile"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div className="profile-header" variants={containerVariants} initial="hidden" animate="visible">
+        <motion.div className="profile-avatar" variants={itemVariants}>
           {user.username.charAt(0).toUpperCase()}
         </motion.div>
-        <div className="profile-info">
-          <h1 className="gold-text">{user.username}</h1>
+        <motion.div className="profile-info" variants={itemVariants}>
+          <h1>{user.username}</h1>
           <p className="profile-email">{user.email}</p>
           <div className="profile-stats">
             <div className="stat">
-              <span className="stat-number">{favorites.length}</span>
+              <span className="stat-number"><FiHeart /> {favorites.length}</span>
               <span className="stat-label">Favorites</span>
             </div>
             <div className="stat">
-              <span className="stat-number">{watchHistory.length}</span>
+              <span className="stat-number"><FiEye /> {watchHistory.length}</span>
               <span className="stat-label">Watched</span>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <div className="profile-sections">
-        <section className="favorites-section">
-          <h2>Favorite Movies</h2>
+        <motion.section className="profile-section" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+          <h2><FiHeart /> Favorite Movies</h2>
           {favorites.length > 0 ? (
-            <div className="favorites-grid">
+            <motion.div className="favorites-grid" variants={containerVariants} initial="hidden" animate="visible">
               {favorites.map(movie => (
                 <motion.div
                   key={movie.id}
                   className="favorite-movie-card"
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() => onMovieClick && onMovieClick(movie)}
+                  variants={itemVariants}
+                  layout
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  onClick={() => onMovieClick(movie)}
                 >
-                  <img 
-                    src={movie.poster_path || '/placeholder-movie.jpg'} 
-                    alt={movie.title} 
-                    onError={(e) => {
-                      e.target.src = '/placeholder-movie.jpg';
-                    }}
-                  />
+                  <img src={movie.poster_path} alt={movie.title} />
                   <div className="movie-overlay">
                     <h4>{movie.title}</h4>
                     <button
                       className="favorite-btn active"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleToggleFavorite(movie);
+                        onToggleFavorite(movie);
                       }}
                     >
-                      ♥
+                      <FiHeart />
                     </button>
                   </div>
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           ) : (
-            <p className="no-data">No favorite movies yet. Start adding some!</p>
+            <p className="no-data">Browse and add some movies to your favorites!</p>
           )}
-        </section>
+        </motion.section>
 
-        <section className="history-section">
-          <h2>Recently Watched</h2>
+        <motion.section className="profile-section" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+          <h2><FiEye /> Recently Watched</h2>
           {watchHistory.length > 0 ? (
-            <div className="history-list">
-              {watchHistory.slice(0, 10).map((item, index) => (
-                <div key={index} className="history-item" onClick={() => onMovieClick && onMovieClick(item)}>
-                  <span className="movie-title">
-                    {item.title || `Movie ID: ${item.movie_id || item.id}`}
-                  </span>
+            <motion.div className="history-list" variants={containerVariants} initial="hidden" animate="visible">
+              {watchHistory.slice(0, 10).map((item) => (
+                <motion.div key={`${item.id}-${item.watched_at}`} className="history-item" variants={itemVariants} onClick={() => onMovieClick(item)}>
+                  <img src={item.poster_path} alt={item.title} className="history-poster" />
+                  <div className="history-details">
+                    <h4 className="history-title">{item.title}</h4>
+                    <div className="history-meta">
+                      <span><FiStar /> {item.vote_average?.toFixed(1)}</span>
+                      <span><FiCalendar /> {getReleaseYear(item.release_date)}</span>
+                    </div>
+                  </div>
                   <span className="watch-date">
                     {new Date(item.watched_at).toLocaleDateString()}
                   </span>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           ) : (
-            <p className="no-data">No watch history yet. Start watching movies!</p>
+            <p className="no-data">Your watch history is empty.</p>
           )}
-        </section>
+        </motion.section>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
