@@ -57,7 +57,7 @@ const Header = ({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        CINEMATIC
+        SPHYNX-FLICKS
       </motion.div>
 
       {/* Desktop Navigation */}
