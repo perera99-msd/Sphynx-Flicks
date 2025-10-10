@@ -1,7 +1,10 @@
 // src/services/favoritesService.js
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
+// Update the API_BASE_URL to your Cloudflare Worker URL
+const API_BASE_URL = 'https://backend.medperera99.workers.dev/api';
+// or if you're using the other domain:
+// const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
