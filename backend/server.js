@@ -6,6 +6,8 @@ import jwt from 'jsonwebtoken';
 import mysql from 'mysql2/promise';
 import bodyParser from 'body-parser';
 import axios from 'axios';
+import express from 'express';
+import cors from 'cors';
 
 const app = express();
 const PORT = 3001;
@@ -35,10 +37,11 @@ const MOVIE_APIS = {
 
 // Middleware
 const corsOptions = {
-  origin: 'https://sphynx-flicks.pages.dev', // Your frontend's domain
+  origin: 'https://eb6e6eeb.sphynx-flicks.pages.dev', // The exact origin from the error message
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
+
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
