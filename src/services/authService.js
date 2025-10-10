@@ -1,61 +1,39 @@
 // src/services/authService.js
+import axios from 'axios';
+
 const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
 
-async function fetchFromAPI(endpoint, options = {}) {
-  try {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `API error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error(`API call failed for ${endpoint}:`, error);
-    throw error;
-  }
-}
-
-export const AuthService = {
+const AuthService = {
   async login(credentials) {
     try {
-      return await fetchFromAPI('/login', {
-        method: 'POST',
-        body: JSON.stringify(credentials)
-      });
+      const response = await axios.post(`${API_BASE_URL}/login`, credentials);
+      return response.data;
     } catch (error) {
-      throw new Error(error.message || 'Login failed');
+      throw new Error(error.response?.data?.error || 'Login failed');
     }
   },
 
   async register(credentials) {
     try {
-      return await fetchFromAPI('/register', {
-        method: 'POST',
-        body: JSON.stringify(credentials)
-      });
+      const response = await axios.post(`${API_BASE_URL}/register`, credentials);
+      return response.data;
     } catch (error) {
-      throw new Error(error.message || 'Registration failed');
+      throw new Error(error.response?.data?.error || 'Registration failed');
     }
   },
 
   async verifyToken(token) {
     try {
-      return await fetchFromAPI('/verify', {
+      const response = await axios.get(`${API_BASE_URL}/verify`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+      return response.data;
     } catch (error) {
       throw new Error('Token verification failed');
     }
   }
 };
+
+export { AuthService };

@@ -1,4 +1,3 @@
-// src/components/MovieGrid/MovieGrid.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import MovieCard from '../MovieCard/MovieCard';
