@@ -13,11 +13,11 @@ const JWT_SECRET = 'sphynx_flicks_premium_secret_2024';
 
 // MySQL Database configuration
 const dbConfig = {
-  host: 'localhost',
-  user: 'root',
-  password: '',
+  host: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
+  user: '27xLKKpv4D2fdAs.root',
+  password: 'nECjdAGqPcE7v4PY',
   database: 'sphynx_flicks',
-  port: 3306
+  port: 4000
 };
 
 // Movie APIs configuration
