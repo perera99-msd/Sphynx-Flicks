@@ -1,33 +1,48 @@
 // src/components/FilterSection/FilterSection.jsx
 import React from 'react';
+import { motion } from 'framer-motion';
+import { FiFilter, FiX } from 'react-icons/fi';
 import './FilterSection.css';
 
-const FilterSection = ({ filters, onFilterChange, onClearFilters, genres = [] }) => {
+const FilterSection = ({ filters, onFilterChange, onClearFilters, genres }) => {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 30 }, (_, i) => currentYear - i);
 
-  const handleFilterChange = (filterType, value) => {
+  const handleFilterChange = (key, value) => {
     onFilterChange({
       ...filters,
-      [filterType]: value
+      [key]: value
     });
   };
 
-  const hasActiveFilters = filters.genre || filters.year || filters.rating;
+  const hasActiveFilters = Object.values(filters).some(value => value !== '');
 
   return (
-    <section className="filter-section">
+    <motion.section 
+      className="filter-section"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="filter-container">
-        <h3 className="filter-title">Filter Movies</h3>
-        
+        <div className="filter-header">
+          <FiFilter className="filter-icon" />
+          <h3>Filter Movies</h3>
+          {hasActiveFilters && (
+            <button className="clear-filters-btn" onClick={onClearFilters}>
+              <FiX /> Clear All
+            </button>
+          )}
+        </div>
+
         <div className="filter-grid">
-          {/* Genre Filter */}
           <div className="filter-group">
             <label htmlFor="genre-filter">Genre</label>
-            <select
+            <select 
               id="genre-filter"
-              value={filters.genre}
+              value={filters.genre} 
               onChange={(e) => handleFilterChange('genre', e.target.value)}
+              className="filter-select"
             >
               <option value="">All Genres</option>
               {genres.map(genre => (
@@ -38,13 +53,13 @@ const FilterSection = ({ filters, onFilterChange, onClearFilters, genres = [] })
             </select>
           </div>
 
-          {/* Year Filter */}
           <div className="filter-group">
             <label htmlFor="year-filter">Release Year</label>
-            <select
+            <select 
               id="year-filter"
-              value={filters.year}
+              value={filters.year} 
               onChange={(e) => handleFilterChange('year', e.target.value)}
+              className="filter-select"
             >
               <option value="">All Years</option>
               {years.map(year => (
@@ -55,37 +70,24 @@ const FilterSection = ({ filters, onFilterChange, onClearFilters, genres = [] })
             </select>
           </div>
 
-          {/* Rating Filter */}
           <div className="filter-group">
             <label htmlFor="rating-filter">Minimum Rating</label>
-            <select
+            <select 
               id="rating-filter"
-              value={filters.rating}
+              value={filters.rating} 
               onChange={(e) => handleFilterChange('rating', e.target.value)}
+              className="filter-select"
             >
               <option value="">Any Rating</option>
-              <option value="9">9+ Stars</option>
               <option value="8">8+ Stars</option>
               <option value="7">7+ Stars</option>
               <option value="6">6+ Stars</option>
               <option value="5">5+ Stars</option>
             </select>
           </div>
-
-          {/* Clear Filters Button */}
-          <div className="filter-group">
-            <label>&nbsp;</label>
-            <button
-              className={`clear-filters-btn ${hasActiveFilters ? 'active' : ''}`}
-              onClick={onClearFilters}
-              disabled={!hasActiveFilters}
-            >
-              Clear Filters
-            </button>
-          </div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 

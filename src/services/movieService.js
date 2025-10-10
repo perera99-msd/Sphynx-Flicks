@@ -1,137 +1,61 @@
-// src/services/movieService.js
-import axios from 'axios';
-
-// Use HTTPS URL for your Cloudflare Worker backend
+// src/services/authService.js
 const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
 
-const convertGenreIdsToNames = (movies, genres) => {
-  return movies.map(movie => ({
-    ...movie,
-    genre_names: movie.genre_ids?.map(genreId => {
-      const genre = genres.find(g => g.id === genreId);
-      return genre ? genre.name : 'Unknown';
-    }).filter(name => name !== 'Unknown') || []
-  }));
-};
+async function fetchFromAPI(endpoint, options = {}) {
+  try {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
 
-export const MovieService = {
-  genres: [], // Initialize genres array
-
-  async getPopularMovies(page = 1) {
-    try {
-      console.log('Fetching popular movies from:', `${API_BASE_URL}/movies/popular?page=${page}`);
-      const response = await axios.get(`${API_BASE_URL}/movies/popular?page=${page}`);
-      const movies = response.data;
-      
-      // If we have genres, convert genre_ids to genre_names
-      if (this.genres && this.genres.length > 0) {
-        return convertGenreIdsToNames(movies, this.genres);
-      }
-      
-      return movies;
-    } catch (error) {
-      console.error('Error fetching popular movies:', error);
-      throw error;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `API error: ${response.status}`);
     }
-  },
-  
-  async searchMovies(query, page = 1) {
+
+    return await response.json();
+  } catch (error) {
+    console.error(`API call failed for ${endpoint}:`, error);
+    throw error;
+  }
+}
+
+export const AuthService = {
+  async login(credentials) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/movies/search?query=${encodeURIComponent(query)}&page=${page}`);
-      const movies = response.data;
-      
-      // If we have genres, convert genre_ids to genre_names
-      if (this.genres && this.genres.length > 0) {
-        return convertGenreIdsToNames(movies, this.genres);
-      }
-      
-      return movies;
+      return await fetchFromAPI('/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials)
+      });
     } catch (error) {
-      console.error('Error searching movies:', error);
-      throw error;
+      throw new Error(error.message || 'Login failed');
     }
   },
 
-  async getMovieDetails(movieId, source = 'TMDB') {
+  async register(credentials) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/movies/${movieId}`);
-      return response.data;
+      return await fetchFromAPI('/register', {
+        method: 'POST',
+        body: JSON.stringify(credentials)
+      });
     } catch (error) {
-      console.error('Error fetching movie details:', error);
-      throw error;
+      throw new Error(error.message || 'Registration failed');
     }
   },
 
-  async getTrendingMovies() {
+  async verifyToken(token) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/movies/trending`);
-      const movies = response.data;
-      
-      // If we have genres, convert genre_ids to genre_names
-      if (this.genres && this.genres.length > 0) {
-        return convertGenreIdsToNames(movies, this.genres);
-      }
-      
-      return movies;
+      return await fetchFromAPI('/verify', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
     } catch (error) {
-      console.error('Error fetching trending movies:', error);
-      throw error;
-    }
-  },
-
-  async getMoviesByGenre(genreId, page = 1) {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/movies/genre/${genreId}?page=${page}`);
-      const movies = response.data;
-      
-      // If we have genres, convert genre_ids to genre_names
-      if (this.genres && this.genres.length > 0) {
-        return convertGenreIdsToNames(movies, this.genres);
-      }
-      
-      return movies;
-    } catch (error) {
-      console.error('Error fetching movies by genre:', error);
-      throw error;
-    }
-  },
-
-  async getGenres() {
-    try {
-      console.log('Fetching genres from:', `${API_BASE_URL}/genres`);
-      const response = await axios.get(`${API_BASE_URL}/genres`);
-      const genresData = response.data;
-      // Store genres for future use
-      this.genres = genresData;
-      return genresData;
-    } catch (error) {
-      console.error('Error fetching genres:', error);
-      // Return fallback genres if API fails
-      this.genres = FALLBACK_GENRES;
-      return FALLBACK_GENRES;
+      throw new Error('Token verification failed');
     }
   }
 };
-
-// Fallback genres
-const FALLBACK_GENRES = [
-  { id: 28, name: 'Action' },
-  { id: 12, name: 'Adventure' },
-  { id: 16, name: 'Animation' },
-  { id: 35, name: 'Comedy' },
-  { id: 80, name: 'Crime' },
-  { id: 99, name: 'Documentary' },
-  { id: 18, name: 'Drama' },
-  { id: 10751, name: 'Family' },
-  { id: 14, name: 'Fantasy' },
-  { id: 36, name: 'History' },
-  { id: 27, name: 'Horror' },
-  { id: 10402, name: 'Music' },
-  { id: 9648, name: 'Mystery' },
-  { id: 10749, name: 'Romance' },
-  { id: 878, name: 'Science Fiction' },
-  { id: 10770, name: 'TV Movie' },
-  { id: 53, name: 'Thriller' },
-  { id: 10752, name: 'War' },
-  { id: 37, name: 'Western' }
-];

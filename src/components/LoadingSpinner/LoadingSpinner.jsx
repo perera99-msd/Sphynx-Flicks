@@ -3,44 +3,26 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import './LoadingSpinner.css';
 
-const LoadingSpinner = ({ message = "Loading amazing movies..." }) => {
+const LoadingSpinner = () => {
   return (
-    <motion.div 
-      className="loading-container"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      aria-live="polite"
-      aria-label={message}
-    >
-      <div className="spinner">
-        <motion.div
-          className="spinner-ring"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.div
-          className="spinner-ring"
-          animate={{ rotate: -360 }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.div
-          className="spinner-dot"
-          animate={{ 
-            scale: [1, 1.5, 1],
-            opacity: [1, 0.7, 1]
-          }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        />
-      </div>
-      <motion.p
-        className="loading-text"
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 1.5, repeat: Infinity }}
+    <div className="loading-container">
+      <motion.div 
+        className="loading-spinner"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
       >
-        {message}
+        <div className="spinner-ring"></div>
+        <div className="spinner-glow"></div>
+      </motion.div>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="loading-text"
+      >
+        Loading amazing content...
       </motion.p>
-    </motion.div>
+    </div>
   );
 };
 

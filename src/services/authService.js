@@ -1,78 +1,61 @@
 // src/services/authService.js
-import axios from 'axios';
-
-// Use HTTPS URL for your Cloudflare Worker backend
 const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
+
+async function fetchFromAPI(endpoint, options = {}) {
+  try {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `API error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`API call failed for ${endpoint}:`, error);
+    throw error;
+  }
+}
 
 export const AuthService = {
   async login(credentials) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/login`, credentials);
-      
-      // Store token and user data in localStorage
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        localStorage.setItem('favorites', JSON.stringify(response.data.favorites || []));
-      }
-      
-      return response.data;
+      return await fetchFromAPI('/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials)
+      });
     } catch (error) {
-      throw new Error(error.response?.data?.error || 'Login failed');
+      throw new Error(error.message || 'Login failed');
     }
   },
 
   async register(credentials) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/register`, credentials);
-      
-      // Store token and user data in localStorage
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        localStorage.setItem('favorites', JSON.stringify(response.data.favorites || []));
-      }
-      
-      return response.data;
+      return await fetchFromAPI('/register', {
+        method: 'POST',
+        body: JSON.stringify(credentials)
+      });
     } catch (error) {
-      throw new Error(error.response?.data?.error || 'Registration failed');
+      throw new Error(error.message || 'Registration failed');
     }
   },
 
   async verifyToken(token) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/verify`, {
+      return await fetchFromAPI('/verify', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      return response.data;
     } catch (error) {
       throw new Error('Token verification failed');
     }
-  },
-
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('favorites');
-  },
-
-  getToken() {
-    return localStorage.getItem('token');
-  },
-
-  getUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  },
-
-  getFavorites() {
-    const favorites = localStorage.getItem('favorites');
-    return favorites ? JSON.parse(favorites) : [];
-  },
-
-  updateFavorites(favorites) {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
   }
 };

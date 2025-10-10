@@ -1,36 +1,60 @@
 /* src/components/FilterSection/FilterSection.css */
 .filter-section {
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  padding: 1.5rem 0;
 }
 
 .filter-container {
-  background: var(--card-bg);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
-.filter-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+.filter-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.filter-header h3 {
   color: var(--text-primary);
-  font-family: 'Cinzel', serif;
-  background: var(--gradient-gold);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.filter-icon {
+  color: var(--gold-primary);
+  font-size: 1.5rem;
+}
+
+.clear-filters-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--gold-primary);
+  border: 1px solid var(--gold-primary);
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: auto;
+}
+
+.clear-filters-btn:hover {
+  background: var(--gold-primary);
+  color: var(--primary-dark);
 }
 
 .filter-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
-  align-items: end;
 }
 
 .filter-group {
@@ -40,69 +64,50 @@
 }
 
 .filter-group label {
-  font-weight: 600;
   color: var(--text-secondary);
   font-size: 0.9rem;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.filter-group select {
-  background: var(--secondary-dark);
-  border: 1px solid rgba(212, 175, 55, 0.3);
+.filter-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  padding: 0.8rem 1rem;
+  padding: 0.75rem 1rem;
   color: var(--text-primary);
   font-size: 1rem;
-  transition: all 0.3s ease;
   cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
-.filter-group select:focus {
+.filter-select:focus {
   outline: none;
   border-color: var(--gold-primary);
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
-.filter-group select:hover {
-  border-color: var(--gold-primary);
-}
-
-.clear-filters-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 0.8rem 1.5rem;
-  color: var(--text-secondary);
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: not-allowed;
-  transition: all 0.3s ease;
-}
-
-.clear-filters-btn.active {
-  background: rgba(212, 175, 55, 0.1);
-  border-color: var(--gold-primary);
-  color: var(--gold-primary);
-  cursor: pointer;
-}
-
-.clear-filters-btn.active:hover {
-  background: rgba(212, 175, 55, 0.2);
-  transform: translateY(-1px);
+.filter-select:hover {
+  border-color: rgba(212, 175, 55, 0.3);
 }
 
 @media (max-width: 768px) {
-  .filter-section {
-    padding: 1rem;
-  }
-  
   .filter-container {
-    padding: 1.5rem;
+    padding: 0 1rem;
   }
   
   .filter-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+  
+  .filter-header {
+    flex-wrap: wrap;
+  }
+  
+  .clear-filters-btn {
+    margin-left: 0;
   }
 }

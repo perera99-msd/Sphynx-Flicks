@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.jsx
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AuthService } from '../services/authService';
 
 const AuthContext = createContext();
@@ -15,90 +15,63 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [favorites, setFavorites] = useState([]);
-  const [watchlist, setWatchlist] = useState([]);
   const [watchHistory, setWatchHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const userData = await AuthService.verifyToken(token);
+          setUser(userData.user);
+          setFavorites(userData.favorites || []);
+          setWatchHistory(userData.watchHistory || []);
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          localStorage.removeItem('token');
+        }
+      }
+      setLoading(false);
+    };
+
     checkAuth();
   }, []);
 
-  const checkAuth = async () => {
-    const token = AuthService.getToken();
-    const savedUser = AuthService.getUser();
-    
-    if (token && savedUser) {
-      try {
-        const userData = await AuthService.verifyToken(token);
-        setUser(userData.user);
-        setFavorites(userData.favorites || []);
-        setWatchlist(userData.watchlist || []);
-        setWatchHistory(userData.watchHistory || []);
-      } catch (error) {
-        console.error('Token verification failed:', error);
-        logout();
-      }
-    }
-    setLoading(false);
-  };
-
   const login = async (credentials) => {
-    try {
-      const data = await AuthService.login(credentials);
-      setUser(data.user);
-      setFavorites(data.favorites || []);
-      setWatchlist(data.watchlist || []);
-      setWatchHistory(data.watchHistory || []);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+    const result = await AuthService.login(credentials);
+    setUser(result.user);
+    setFavorites(result.favorites || []);
+    setWatchHistory(result.watchHistory || []);
+    localStorage.setItem('token', result.token);
+    return result;
   };
 
   const register = async (credentials) => {
-    try {
-      const data = await AuthService.register(credentials);
-      setUser(data.user);
-      setFavorites(data.favorites || []);
-      setWatchlist(data.watchlist || []);
-      setWatchHistory(data.watchHistory || []);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+    const result = await AuthService.register(credentials);
+    setUser(result.user);
+    setFavorites(result.favorites || []);
+    setWatchHistory(result.watchHistory || []);
+    localStorage.setItem('token', result.token);
+    return result;
   };
 
   const logout = () => {
-    AuthService.logout();
     setUser(null);
     setFavorites([]);
-    setWatchlist([]);
     setWatchHistory([]);
-  };
-
-  const updateFavorites = (newFavorites) => {
-    setFavorites(newFavorites);
-  };
-
-  const updateWatchlist = (newWatchlist) => {
-    setWatchlist(newWatchlist);
-  };
-
-  const addToWatchHistory = (movie) => {
-    setWatchHistory(prev => [movie, ...prev.slice(0, 49)]);
+    localStorage.removeItem('token');
   };
 
   const value = {
     user,
     favorites,
-    watchlist,
     watchHistory,
     login,
     register,
     logout,
-    updateFavorites,
-    updateWatchlist,
-    addToWatchHistory,
+    setFavorites,
+    setWatchHistory,
     loading
   };
 
