@@ -1,77 +1,60 @@
 // src/services/favoritesService.js
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
-
+const API_BASE_URL = 'http://localhost:3001/api';
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
-const FavoritesService = {
+export const FavoritesService = {
+  // --- FAVORITES ---
   async getFavorites() {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/favorites`, {
-        headers: getAuthHeader()
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching favorites:', error);
-      return [];
-    }
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    return Promise.resolve(favorites);
   },
 
   async addFavorite(movie) {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/favorites`, {
-        movie_id: movie.id,
-        movie_data: movie
-      }, {
-        headers: getAuthHeader()
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error adding favorite:', error);
-      throw error;
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    if (!favorites.some(fav => fav.id === movie.id)) {
+      const updatedFavorites = [...favorites, movie];
+      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
     }
+    return Promise.resolve({ message: 'Favorite added successfully' });
   },
 
   async removeFavorite(movieId) {
-    try {
-      const response = await axios.delete(`${API_BASE_URL}/favorites/${movieId}`, {
-        headers: getAuthHeader()
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error removing favorite:', error);
-      throw error;
-    }
+    let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const updatedFavorites = favorites.filter(fav => fav.id !== movieId);
+    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+    return Promise.resolve({ message: 'Favorite removed successfully' });
   },
 
+  // --- WATCH HISTORY ---
   async getWatchHistory() {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/watch-history`, {
-        headers: getAuthHeader()
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching watch history:', error);
-      return [];
-    }
+    const history = JSON.parse(localStorage.getItem('watchHistory') || '[]');
+    return Promise.resolve(history);
   },
 
   async recordWatch(movieId) {
     try {
-      // First get movie details to store in history
       const movie = await this.getMovieDetails(movieId);
-      const response = await axios.post(`${API_BASE_URL}/watch-history`, {
-        movie_id: movieId,
-        movie_data: movie
-      }, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      let history = JSON.parse(localStorage.getItem('watchHistory') || '[]');
+      
+      // Remove existing entry for this movie to move it to the top
+      history = history.filter(item => item.movie_id !== movieId);
+
+      const newHistoryItem = { 
+        movie_id: movieId, 
+        movie_data: movie, 
+        watched_at: new Date().toISOString() 
+      };
+      
+      const updatedHistory = [newHistoryItem, ...history].slice(0, 50); // Keep max 50 items
+      localStorage.setItem('watchHistory', JSON.stringify(updatedHistory));
+      
+      return Promise.resolve(newHistoryItem);
     } catch (error) {
       console.error('Error recording watch:', error);
       throw error;
@@ -88,7 +71,7 @@ const FavoritesService = {
     }
   },
 
-  // Watchlist functionality
+  // --- WATCHLIST (Unchanged, but would need similar logic if used) ---
   async getWatchlist() {
     try {
       const response = await axios.get(`${API_BASE_URL}/watchlist`, {
@@ -128,5 +111,3 @@ const FavoritesService = {
     }
   }
 };
-
-export { FavoritesService };

@@ -1,140 +1,102 @@
 // src/components/UserProfile/UserProfile.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiUser, FiHeart, FiClock, FiSettings, FiLogOut } from 'react-icons/fi';
-import MovieGrid from '../MovieGrid/MovieGrid';
 import './UserProfile.css';
 
 const UserProfile = ({ user, favorites, watchHistory, onMovieClick, onToggleFavorite }) => {
-  const stats = [
-    {
-      icon: FiHeart,
-      label: 'Favorites',
-      value: favorites.length,
-      color: '#ff4757'
-    },
-    {
-      icon: FiClock,
-      label: 'Watch History',
-      value: watchHistory.length,
-      color: '#2ed573'
-    }
-  ];
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5
-      }
-    }
-  };
+  // A placeholder image for movies without a poster
+  const placeholderImage = 'https://via.placeholder.com/200x300?text=No+Image';
 
   return (
-    <motion.div 
-      className="user-profile"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <div className="profile-container">
-        {/* Profile Header */}
-        <motion.section className="profile-header" variants={itemVariants}>
-          <div className="profile-avatar">
-            <FiUser />
+    <div className="user-profile">
+      <div className="profile-header">
+        <motion.div
+          className="profile-avatar"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          {user.username.charAt(0).toUpperCase()}
+        </motion.div>
+        <div className="profile-info">
+          <h1 className="gold-text">{user.username}</h1>
+          <p className="profile-email">{user.email}</p>
+          <div className="profile-stats">
+            <div className="stat">
+              <span className="stat-number">{favorites.length}</span>
+              <span className="stat-label">Favorites</span>
+            </div>
+            <div className="stat">
+              <span className="stat-number">{watchHistory.length}</span>
+              <span className="stat-label">Watched</span>
+            </div>
           </div>
-          <div className="profile-info">
-            <h1 className="profile-name">{user.username}</h1>
-            <p className="profile-email">{user.email}</p>
-            <p className="profile-join-date">
-              Member since {new Date(user.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-        </motion.section>
-
-        {/* Stats Grid */}
-        <motion.section className="stats-grid" variants={itemVariants}>
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div key={stat.label} className="stat-card">
-                <div 
-                  className="stat-icon"
-                  style={{ backgroundColor: `${stat.color}20`, borderColor: stat.color }}
-                >
-                  <Icon style={{ color: stat.color }} />
-                </div>
-                <div className="stat-info">
-                  <h3 className="stat-value">{stat.value}</h3>
-                  <p className="stat-label">{stat.label}</p>
-                </div>
-              </div>
-            );
-          })}
-        </motion.section>
-
-        {/* Favorites Section */}
-        {favorites.length > 0 && (
-          <motion.section className="profile-section" variants={itemVariants}>
-            <div className="section-header">
-              <FiHeart className="section-icon" />
-              <h2>Favorite Movies</h2>
-              <span className="section-count">{favorites.length}</span>
-            </div>
-            <MovieGrid
-              movies={favorites}
-              onMovieClick={onMovieClick}
-              onToggleFavorite={onToggleFavorite}
-              favorites={favorites}
-              user={user}
-              activeView="favorites"
-            />
-          </motion.section>
-        )}
-
-        {/* Watch History Section */}
-        {watchHistory.length > 0 && (
-          <motion.section className="profile-section" variants={itemVariants}>
-            <div className="section-header">
-              <FiClock className="section-icon" />
-              <h2>Watch History</h2>
-              <span className="section-count">{watchHistory.length}</span>
-            </div>
-            <MovieGrid
-              movies={watchHistory}
-              onMovieClick={onMovieClick}
-              onToggleFavorite={onToggleFavorite}
-              favorites={favorites}
-              user={user}
-              activeView="history"
-            />
-          </motion.section>
-        )}
-
-        {/* Empty States */}
-        {favorites.length === 0 && watchHistory.length === 0 && (
-          <motion.section className="empty-state" variants={itemVariants}>
-            <div className="empty-icon">
-              <FiUser />
-            </div>
-            <h3>Your Profile is Empty</h3>
-            <p>Start exploring movies and add them to your favorites!</p>
-          </motion.section>
-        )}
+        </div>
       </div>
-    </motion.div>
+
+      <div className="profile-sections">
+        <section className="favorites-section">
+          <h2>Favorite Movies</h2>
+          {favorites.length > 0 ? (
+            <div className="favorites-grid">
+              {favorites.map(movie => (
+                // Defensive check: Ensure movie and movie.id exist before rendering
+                movie && movie.id && (
+                  <motion.div
+                    key={movie.id}
+                    className="favorite-movie-card"
+                    whileHover={{ scale: 1.05 }}
+                    onClick={() => onMovieClick(movie)}
+                  >
+                    <img 
+                      src={movie.poster_path || placeholderImage} 
+                      alt={movie.title || 'Movie Title'} 
+                    />
+                    <div className="movie-overlay">
+                      <h4>{movie.title}</h4>
+                      <button
+                        className="favorite-btn active"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleFavorite(movie);
+                        }}
+                      >
+                        ♥
+                      </button>
+                    </div>
+                  </motion.div>
+                )
+              ))}
+            </div>
+          ) : (
+            <p className="no-data">No favorite movies yet</p>
+          )}
+        </section>
+
+        <section className="history-section">
+          <h2>Recently Watched</h2>
+          {watchHistory.length > 0 ? (
+            <div className="history-list">
+              {watchHistory.slice(0, 10).map((item, index) => (
+                // Defensive check: Ensure item and its properties exist
+                item && item.movie_id && item.watched_at && (
+                  <div key={`${item.movie_id}-${index}`} className="history-item">
+                    <span className="movie-title">
+                      {item.movie_data?.title || `Movie ID: ${item.movie_id}`}
+                    </span>
+                    <span className="watch-date">
+                      {new Date(item.watched_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                )
+              ))}
+            </div>
+          ) : (
+            <p className="no-data">No watch history yet</p>
+          )}
+        </section>
+      </div>
+    </div>
   );
 };
 
