@@ -1,6 +1,6 @@
-name = "sphynx-flicks-api"
+name = "backend"
 main = "server.js"
-compatibility_date = "2024-05-01"
+compatibility_date = "2025-10-10"
 
 [build]
 command = "npm install"
