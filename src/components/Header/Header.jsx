@@ -1,232 +1,141 @@
 // src/components/Header/Header.jsx
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSearch, FiUser, FiLogOut, FiHeart, FiMenu, FiX, FiHome, FiUserCheck } from 'react-icons/fi';
+import { FiSearch, FiMenu, FiX, FiUser, FiHeart, FiLogOut } from 'react-icons/fi';
 import './Header.css';
 
-const Header = ({ onSearch, searchQuery, user, onAuthClick, onLogout, activeView, onViewChange, favoritesCount }) => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery || '');
-  const searchInputRef = useRef(null);
+const Header = ({
+  onSearch,
+  searchQuery,
+  user,
+  onAuthClick,
+  onLogout,
+  activeView,
+  onViewChange,
+  favoritesCount
+}) => {
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
-  useEffect(() => {
-    setLocalSearchQuery(searchQuery || '');
-  }, [searchQuery]);
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    onSearch(localSearchQuery);
-    if (window.innerWidth < 768) {
-      setIsSearchOpen(false);
-    }
-  };
-
-  const handleSearchChange = (e) => {
-    setLocalSearchQuery(e.target.value);
-    if (e.target.value === '') {
-      onSearch('');
-    }
-  };
-
-  const handleSearchToggle = () => {
-    setIsSearchOpen(!isSearchOpen);
-    if (!isSearchOpen) {
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 100);
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 30);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  // UX Improvement: Lock body scroll when mobile menu is open
+  React.useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
     } else {
-      setLocalSearchQuery('');
-      onSearch('');
+      document.body.style.overflow = 'unset';
     }
-  };
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMenuOpen]);
 
-  const handleViewSelect = (view) => {
+  const handleViewChange = (view) => {
     onViewChange(view);
-    setIsMobileMenuOpen(false);
+    setIsMenuOpen(false);
   };
 
-  const navigationItems = [
-    { id: 'discover', label: 'Discover', icon: FiHome },
-    { id: 'favorites', label: 'Favorites', icon: FiHeart, count: favoritesCount },
-    { id: 'profile', label: 'Profile', icon: FiUserCheck }
-  ];
+  const handleLogout = () => {
+    onLogout();
+    setIsMenuOpen(false);
+  };
+  
+  const itemVariants = {
+    initial: { opacity: 0, y: -10 },
+    animate: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  };
 
   return (
-    <motion.header 
-      className="header"
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+    <motion.header
+      className={`header ${isScrolled ? 'scrolled' : 'floating'}`}
+      layout
+      transition={{ duration: 0.4, ease: [0.2, 0.65, 0.3, 0.9] }}
     >
-      <div className="header-container">
-        {/* Logo */}
-        <motion.div 
-          className="logo"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <h1>
-            <span className="logo-gradient">Cine</span>Elite
-          </h1>
+      <div className="header-content">
+        <motion.div layout="position" className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          SPHYNX-FLICKS
         </motion.div>
 
-        {/* Desktop Navigation */}
         <nav className="desktop-nav">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                className={`nav-item ${activeView === item.id ? 'active' : ''}`}
-                onClick={() => handleViewSelect(item.id)}
-              >
-                <Icon className="nav-icon" />
-                <span>{item.label}</span>
-                {item.count !== undefined && item.count > 0 && (
-                  <span className="nav-badge">{item.count}</span>
-                )}
-              </button>
-            );
-          })}
+            <button className={`view-btn ${activeView === 'discover' ? 'active' : ''}`} onClick={() => handleViewChange('discover')}>Discover</button>
+            {user && (
+              <>
+                <button className={`view-btn ${activeView === 'favorites' ? 'active' : ''}`} onClick={() => handleViewChange('favorites')}>Favorites</button>
+                <button className={`view-btn ${activeView === 'profile' ? 'active' : ''}`} onClick={() => handleViewChange('profile')}>Profile</button>
+              </>
+            )}
         </nav>
 
-        {/* Desktop Actions */}
-        <div className="desktop-actions">
-          {/* Search */}
-          <div className={`search-container ${isSearchOpen ? 'open' : ''}`}>
-            <form onSubmit={handleSearchSubmit} className="search-form">
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search movies..."
-                value={localSearchQuery}
-                onChange={handleSearchChange}
-                className="search-input"
-              />
-              <button type="submit" className="search-submit">
-                <FiSearch />
-              </button>
-            </form>
+        <motion.div layout className="header-actions">
+          <div className="search-bar">
+            <FiSearch className="search-icon" />
+            <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => onSearch(e.target.value)} className="search-input" />
           </div>
-
-          <button 
-            className="search-toggle"
-            onClick={handleSearchToggle}
-            aria-label="Toggle search"
-          >
-            <FiSearch />
-          </button>
-
-          {/* User Actions */}
           {user ? (
-            <div className="user-menu">
-              <motion.button 
-                className="user-avatar"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleViewSelect('profile')}
-              >
-                <FiUser />
-                <span className="user-name">{user.username}</span>
-              </motion.button>
-              
-              <motion.button 
-                className="logout-btn"
-                onClick={onLogout}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                title="Logout"
-              >
-                <FiLogOut />
-              </motion.button>
-            </div>
+            <motion.div className="user-section" variants={itemVariants} initial="initial" animate="animate">
+              <button className="icon-btn favorites-badge" onClick={() => handleViewChange('favorites')} title="View Favorites">
+                <FiHeart />
+                {favoritesCount > 0 && <span className="favorites-count">{favoritesCount}</span>}
+              </button>
+              <div className="user-info" onClick={() => handleViewChange('profile')} role="button" tabIndex={0}>
+                <div className="user-avatar">{user.username.charAt(0).toUpperCase()}</div>
+              </div>
+              <button className="icon-btn logout-btn" onClick={handleLogout} title="Logout"><FiLogOut /></button>
+            </motion.div>
           ) : (
-            <motion.button 
-              className="auth-btn"
-              onClick={onAuthClick}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <FiUser />
+            <motion.button className="auth-btn" onClick={onAuthClick} variants={itemVariants} initial="initial" animate="animate">
               <span>Sign In</span>
             </motion.button>
           )}
+        </motion.div>
+
+        <div className="mobile-menu-toggle">
+          <button className="menu-toggle-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <FiX /> : <FiMenu />}
+          </button>
         </div>
-
-        {/* Mobile Menu Button */}
-        <button 
-          className="mobile-menu-btn"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          {isMobileMenuOpen ? <FiX /> : <FiMenu />}
-        </button>
       </div>
-
-      {/* Mobile Menu */}
+      
       <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div 
-            className="mobile-menu"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+        {isMenuOpen && (
+          <motion.div
+            className="mobile-nav-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="mobile-search">
-              <form onSubmit={handleSearchSubmit} className="search-form">
-                <input
-                  type="text"
-                  placeholder="Search movies..."
-                  value={localSearchQuery}
-                  onChange={handleSearchChange}
-                  className="search-input"
-                />
-                <button type="submit" className="search-submit">
-                  <FiSearch />
-                </button>
-              </form>
-            </div>
-
-            <nav className="mobile-nav">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    className={`mobile-nav-item ${activeView === item.id ? 'active' : ''}`}
-                    onClick={() => handleViewSelect(item.id)}
-                  >
-                    <Icon className="nav-icon" />
-                    <span>{item.label}</span>
-                    {item.count !== undefined && item.count > 0 && (
-                      <span className="nav-badge">{item.count}</span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-
-            <div className="mobile-actions">
-              {user ? (
-                <>
-                  <div className="mobile-user-info">
-                    <FiUser />
-                    <span>{user.username}</span>
-                  </div>
-                  <button className="mobile-logout-btn" onClick={onLogout}>
-                    <FiLogOut />
-                    <span>Logout</span>
-                  </button>
-                </>
-              ) : (
-                <button className="mobile-auth-btn" onClick={onAuthClick}>
-                  <FiUser />
-                  <span>Sign In</span>
-                </button>
-              )}
-            </div>
+            <motion.div 
+              className="mobile-nav-content"
+              initial={{ y: '-100%' }}
+              animate={{ y: '0%' }}
+              exit={{ y: '-100%' }}
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
+            >
+              <nav className="mobile-nav-links">
+                <button className={`mobile-view-btn ${activeView === 'discover' ? 'active' : ''}`} onClick={() => handleViewChange('discover')}>Discover</button>
+                {user && (
+                  <>
+                    <button className={`mobile-view-btn ${activeView === 'favorites' ? 'active' : ''}`} onClick={() => handleViewChange('favorites')}>Favorites ({favoritesCount})</button>
+                    <button className={`mobile-view-btn ${activeView === 'profile' ? 'active' : ''}`} onClick={() => handleViewChange('profile')}>Profile</button>
+                  </>
+                )}
+              </nav>
+              <div className="mobile-user-actions">
+                {user ? (
+                  <button className="mobile-logout-btn" onClick={handleLogout}><FiLogOut /> Logout</button>
+                ) : (
+                  <button className="mobile-auth-btn" onClick={onAuthClick}><FiUser /> Sign In</button>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
