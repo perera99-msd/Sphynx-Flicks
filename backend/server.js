@@ -1,108 +1,99 @@
-// server.js
+// server.js - SQLite Version
 import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import mysql from 'mysql2/promise';
-import bodyParser from 'body-parser';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import axios from 'axios';
-import express from 'express';
-import cors from 'cors';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = 3001;
 const JWT_SECRET = 'sphynx_flicks_premium_secret_2024';
 
-// MySQL Database configuration
-const dbConfig = {
-  host: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
-  user: 'r27xLKKpv4D2fdAs.rootoot', // or your specific username
-  password: 'nECjdAGqPcE7v4PY', // ⚠️ Replace with real password
-  database: 'sphynx_flicks',
-  port: 4000,
-  ssl: {
-    rejectUnauthorized: true
-  }
-};
-
 // Movie APIs configuration
 const MOVIE_APIS = {
   TMDB: {
-    apiKey: 'e723914bacd3f287ba6464803d8f41ce', // Free public key (replace with your own)
+    apiKey: 'e723914bacd3f287ba6464803d8f41ce',
     baseUrl: 'https://api.themoviedb.org/3',
     imageBaseUrl: 'https://image.tmdb.org/t/p/w500'
   },
   OMDB: {
-    apiKey: 'ce396523', // Free public key (replace with your own)
+    apiKey: 'ce396523',
     baseUrl: 'http://www.omdbapi.com'
   }
 };
 
 // Middleware
-const corsOptions = {
-  origin: 'https://eb6e6eeb.sphynx-flicks.pages.dev', // The exact origin from the error message
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
-
-app.use(bodyParser.json());
+app.use(cors());
+app.use(express.json());
 app.use(express.static('public'));
 
-// Database initialization
+// SQLite database
 let db;
 
 async function initializeDatabase() {
   try {
-    db = await mysql.createConnection(dbConfig);
-    console.log('Connected to MySQL database');
+    db = await open({
+      filename: join(__dirname, 'sphynx_flicks.db'),
+      driver: sqlite3.Database
+    });
+
+    // Enable foreign keys
+    await db.exec('PRAGMA foreign_keys = ON');
 
     // Create tables
-    await db.execute(`
+    await db.exec(`
       CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        username VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        username TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    await db.execute(`
+    await db.exec(`
       CREATE TABLE IF NOT EXISTS favorites (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
-        movie_id VARCHAR(50) NOT NULL,
-        movie_data JSON NOT NULL,
-        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        UNIQUE KEY unique_favorite (user_id, movie_id)
-      )
-    `);
-
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS watch_history (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
-        movie_id VARCHAR(50) NOT NULL,
-        movie_data JSON NOT NULL,
-        watched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        movie_id TEXT NOT NULL,
+        movie_data TEXT NOT NULL,
+        added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, movie_id),
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
 
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS watchlist (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
-        movie_id VARCHAR(50) NOT NULL,
-        movie_data JSON NOT NULL,
-        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        UNIQUE KEY unique_watchlist (user_id, movie_id)
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS watch_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        movie_id TEXT NOT NULL,
+        movie_data TEXT NOT NULL,
+        watched_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
 
-    console.log('Database tables initialized');
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS watchlist (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        movie_id TEXT NOT NULL,
+        movie_data TEXT NOT NULL,
+        added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, movie_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    console.log('SQLite database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
   }
@@ -381,25 +372,25 @@ app.post('/api/register', async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    const [result] = await db.execute(
+    const result = await db.run(
       'INSERT INTO users (email, password, username) VALUES (?, ?, ?)',
       [email, hashedPassword, username]
     );
 
     const token = jwt.sign(
-      { id: result.insertId, email, username },
+      { id: result.lastID, email, username },
       JWT_SECRET
     );
 
     res.json({
       message: 'User created successfully',
       token,
-      user: { id: result.insertId, email, username },
+      user: { id: result.lastID, email, username },
       favorites: [],
       watchlist: []
     });
   } catch (error) {
-    if (error.code === 'ER_DUP_ENTRY') {
+    if (error.message.includes('UNIQUE constraint failed')) {
       return res.status(400).json({ error: 'Email already exists' });
     }
     res.status(500).json({ error: 'Database error' });
@@ -414,16 +405,15 @@ app.post('/api/login', async (req, res) => {
   }
 
   try {
-    const [users] = await db.execute(
+    const user = await db.get(
       'SELECT * FROM users WHERE email = ?',
       [email]
     );
 
-    if (users.length === 0) {
+    if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const user = users[0];
     const validPassword = await bcrypt.compare(password, user.password);
     
     if (!validPassword) {
@@ -436,17 +426,17 @@ app.post('/api/login', async (req, res) => {
     );
 
     // Fetch user's favorites and watchlist
-    const [favorites] = await db.execute(
+    const favorites = await db.all(
       'SELECT movie_data FROM favorites WHERE user_id = ? ORDER BY added_at DESC',
       [user.id]
     );
 
-    const [watchlist] = await db.execute(
+    const watchlist = await db.all(
       'SELECT movie_data FROM watchlist WHERE user_id = ? ORDER BY added_at DESC',
       [user.id]
     );
 
-    const [watchHistory] = await db.execute(
+    const watchHistory = await db.all(
       'SELECT movie_data, watched_at FROM watch_history WHERE user_id = ? ORDER BY watched_at DESC LIMIT 50',
       [user.id]
     );
@@ -463,6 +453,7 @@ app.post('/api/login', async (req, res) => {
       }))
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -470,17 +461,17 @@ app.post('/api/login', async (req, res) => {
 // Verify token endpoint
 app.get('/api/verify', authenticateToken, async (req, res) => {
   try {
-    const [favorites] = await db.execute(
+    const favorites = await db.all(
       'SELECT movie_data FROM favorites WHERE user_id = ? ORDER BY added_at DESC',
       [req.user.id]
     );
 
-    const [watchlist] = await db.execute(
+    const watchlist = await db.all(
       'SELECT movie_data FROM watchlist WHERE user_id = ? ORDER BY added_at DESC',
       [req.user.id]
     );
 
-    const [watchHistory] = await db.execute(
+    const watchHistory = await db.all(
       'SELECT movie_data, watched_at FROM watch_history WHERE user_id = ? ORDER BY watched_at DESC LIMIT 50',
       [req.user.id]
     );
@@ -495,6 +486,7 @@ app.get('/api/verify', authenticateToken, async (req, res) => {
       }))
     });
   } catch (error) {
+    console.error('Verify token error:', error);
     res.status(500).json({ error: 'Failed to fetch user data' });
   }
 });
@@ -505,12 +497,13 @@ app.post('/api/favorites', authenticateToken, async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    await db.execute(
-      'INSERT INTO favorites (user_id, movie_id, movie_data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE movie_data = ?',
-      [user_id, movie_id, JSON.stringify(movie_data), JSON.stringify(movie_data)]
+    await db.run(
+      'INSERT OR REPLACE INTO favorites (user_id, movie_id, movie_data) VALUES (?, ?, ?)',
+      [user_id, movie_id, JSON.stringify(movie_data)]
     );
     res.json({ message: 'Movie added to favorites' });
   } catch (error) {
+    console.error('Add favorite error:', error);
     res.status(500).json({ error: 'Failed to add favorite' });
   }
 });
@@ -520,12 +513,13 @@ app.delete('/api/favorites/:movie_id', authenticateToken, async (req, res) => {
   const movie_id = req.params.movie_id;
 
   try {
-    await db.execute(
+    await db.run(
       'DELETE FROM favorites WHERE user_id = ? AND movie_id = ?',
       [user_id, movie_id]
     );
     res.json({ message: 'Movie removed from favorites' });
   } catch (error) {
+    console.error('Remove favorite error:', error);
     res.status(500).json({ error: 'Failed to remove favorite' });
   }
 });
@@ -534,13 +528,14 @@ app.get('/api/favorites', authenticateToken, async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    const [rows] = await db.execute(
+    const rows = await db.all(
       'SELECT movie_data FROM favorites WHERE user_id = ? ORDER BY added_at DESC',
       [user_id]
     );
     const favorites = rows.map(row => JSON.parse(row.movie_data));
     res.json(favorites);
   } catch (error) {
+    console.error('Get favorites error:', error);
     res.status(500).json({ error: 'Failed to fetch favorites' });
   }
 });
@@ -551,12 +546,13 @@ app.post('/api/watchlist', authenticateToken, async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    await db.execute(
-      'INSERT INTO watchlist (user_id, movie_id, movie_data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE movie_data = ?',
-      [user_id, movie_id, JSON.stringify(movie_data), JSON.stringify(movie_data)]
+    await db.run(
+      'INSERT OR REPLACE INTO watchlist (user_id, movie_id, movie_data) VALUES (?, ?, ?)',
+      [user_id, movie_id, JSON.stringify(movie_data)]
     );
     res.json({ message: 'Movie added to watchlist' });
   } catch (error) {
+    console.error('Add to watchlist error:', error);
     res.status(500).json({ error: 'Failed to add to watchlist' });
   }
 });
@@ -566,12 +562,13 @@ app.delete('/api/watchlist/:movie_id', authenticateToken, async (req, res) => {
   const movie_id = req.params.movie_id;
 
   try {
-    await db.execute(
+    await db.run(
       'DELETE FROM watchlist WHERE user_id = ? AND movie_id = ?',
       [user_id, movie_id]
     );
     res.json({ message: 'Movie removed from watchlist' });
   } catch (error) {
+    console.error('Remove from watchlist error:', error);
     res.status(500).json({ error: 'Failed to remove from watchlist' });
   }
 });
@@ -580,13 +577,14 @@ app.get('/api/watchlist', authenticateToken, async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    const [rows] = await db.execute(
+    const rows = await db.all(
       'SELECT movie_data FROM watchlist WHERE user_id = ? ORDER BY added_at DESC',
       [user_id]
     );
     const watchlist = rows.map(row => JSON.parse(row.movie_data));
     res.json(watchlist);
   } catch (error) {
+    console.error('Get watchlist error:', error);
     res.status(500).json({ error: 'Failed to fetch watchlist' });
   }
 });
@@ -597,12 +595,13 @@ app.post('/api/watch-history', authenticateToken, async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    await db.execute(
+    await db.run(
       'INSERT INTO watch_history (user_id, movie_id, movie_data) VALUES (?, ?, ?)',
       [user_id, movie_id, JSON.stringify(movie_data)]
     );
     res.json({ message: 'Watch history recorded' });
   } catch (error) {
+    console.error('Record watch history error:', error);
     res.status(500).json({ error: 'Failed to record watch history' });
   }
 });
@@ -611,7 +610,7 @@ app.get('/api/watch-history', authenticateToken, async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    const [rows] = await db.execute(
+    const rows = await db.all(
       'SELECT movie_data, watched_at FROM watch_history WHERE user_id = ? ORDER BY watched_at DESC LIMIT 50',
       [user_id]
     );
@@ -621,6 +620,7 @@ app.get('/api/watch-history', authenticateToken, async (req, res) => {
     }));
     res.json(history);
   } catch (error) {
+    console.error('Get watch history error:', error);
     res.status(500).json({ error: 'Failed to fetch watch history' });
   }
 });
@@ -638,10 +638,17 @@ app.get('/api/genres', async (req, res) => {
     );
     res.json(response.data.genres);
   } catch (error) {
+    console.error('Error fetching genres:', error);
     res.status(500).json({ error: 'Failed to fetch genres' });
   }
 });
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Server is running' });
+});
+
 app.listen(PORT, () => {
   console.log(`SPHYNX-FLICKS backend running on port ${PORT}`);
+  console.log(`SQLite database: sphynx_flicks.db`);
 });
