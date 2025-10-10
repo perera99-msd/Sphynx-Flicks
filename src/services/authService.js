@@ -1,7 +1,8 @@
 // src/services/authService.js
 import axios from 'axios';
 
-const API_BASE_URL = 'http://backend.msdperera99.workers.dev/api';
+// Use your Cloudflare Worker backend URL (HTTPS)
+const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
 
 export const AuthService = {
   async login(credentials) {
@@ -13,8 +14,6 @@ export const AuthService = {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('favorites', JSON.stringify(response.data.favorites || []));
-        localStorage.setItem('watchlist', JSON.stringify(response.data.watchlist || []));
-        localStorage.setItem('watchHistory', JSON.stringify(response.data.watchHistory || []));
       }
       
       return response.data;
@@ -32,8 +31,6 @@ export const AuthService = {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('favorites', JSON.stringify(response.data.favorites || []));
-        localStorage.setItem('watchlist', JSON.stringify(response.data.watchlist || []));
-        localStorage.setItem('watchHistory', JSON.stringify(response.data.watchHistory || []));
       }
       
       return response.data;
@@ -59,8 +56,6 @@ export const AuthService = {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('favorites');
-    localStorage.removeItem('watchlist');
-    localStorage.removeItem('watchHistory');
   },
 
   getToken() {

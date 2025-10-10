@@ -2,7 +2,8 @@
 import axios from 'axios';
 import { AuthService } from './authService';
 
-const API_BASE_URL = 'http://backend.msdperera99.workers.dev/api';
+// Use your Cloudflare Worker backend URL (HTTPS)
+const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
 
 const getAuthHeader = () => {
   const token = AuthService.getToken();
@@ -152,7 +153,7 @@ export const FavoritesService = {
     }
   },
 
-  // Watchlist functionality
+  // Watchlist functionality (simplified for worker)
   async getWatchlist() {
     try {
       const response = await axios.get(`${API_BASE_URL}/watchlist`, {
