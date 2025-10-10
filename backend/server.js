@@ -34,7 +34,11 @@ const MOVIE_APIS = {
 };
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: 'https://sphynx-flicks.pages.dev', // Your frontend's domain
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
