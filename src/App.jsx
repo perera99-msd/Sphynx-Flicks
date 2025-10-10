@@ -12,7 +12,6 @@ import UserProfile from './components/UserProfile/UserProfile';
 import { MovieService } from './services/movieService';
 import { AuthService } from './services/authService';
 import { FavoritesService } from './services/favoritesService';
-import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 
 const HERO_MOVIES_COUNT = 5;
@@ -37,36 +36,7 @@ function App() {
   const [genres, setGenres] = useState([]);
   const [error, setError] = useState(null);
 
-
-  function App() {
-  return (
-    <AuthProvider>
-      {/* Your app components */}
-    </AuthProvider>
-  );
-}
-  // Add getGenreNames function
-  const getGenreNames = useCallback((movie) => {
-    if (movie.genre_names && movie.genre_names.length > 0) {
-      return movie.genre_names;
-    }
-    
-    if (movie.genres && movie.genres.length > 0) {
-      return movie.genres.map(g => g.name || g);
-    }
-    
-    if (movie.genre_ids && movie.genre_ids.length > 0 && genres.length > 0) {
-      const genreNames = movie.genre_ids.map(genreId => {
-        const genre = genres.find(g => g.id === genreId);
-        return genre ? genre.name : 'Unknown';
-      }).filter(name => name !== 'Unknown');
-      
-      return genreNames;
-    }
-    
-    return [];
-  }, [genres]);
-
+  // Initialize app
   useEffect(() => {
     const initializeApp = async () => {
       setLoading(true);
@@ -78,9 +48,11 @@ function App() {
         // Load initial movies
         await loadMovies(1);
         
-        // Check for authenticated user
-        const token = localStorage.getItem('token');
-        if (token) {
+        // Check for authenticated user from localStorage
+        const token = AuthService.getToken();
+        const savedUser = AuthService.getUser();
+        
+        if (token && savedUser) {
           try {
             const userData = await AuthService.verifyToken(token);
             setUser(userData.user);
@@ -88,7 +60,7 @@ function App() {
             setWatchHistory(userData.watchHistory || []);
           } catch (error) {
             console.error('Token verification failed:', error);
-            localStorage.removeItem('token');
+            AuthService.logout();
             setUser(null);
             setFavorites([]);
             setWatchHistory([]);
@@ -155,11 +127,12 @@ function App() {
     
     return moviesToFilter.filter(movie => {
       const searchMatch = searchQuery
-        ? movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+        ? movie.title?.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
       const genreMatch = filters.genre
-        ? movie.genre_ids?.includes(parseInt(filters.genre))
+        ? movie.genre_ids?.includes(parseInt(filters.genre)) || 
+          movie.genre_names?.some(name => name.toLowerCase().includes(filters.genre.toLowerCase()))
         : true;
       
       const yearMatch = filters.year
@@ -178,12 +151,26 @@ function App() {
     try {
       const detailedMovie = await MovieService.getMovieDetails(movie.id, movie.source);
       setSelectedMovie(detailedMovie);
+      
+      // Record watch history if user is logged in
+      if (user) {
+        try {
+          await FavoritesService.recordWatch(detailedMovie);
+          // Update local watch history
+          setWatchHistory(prev => [
+            { ...detailedMovie, watched_at: new Date().toISOString() },
+            ...prev.slice(0, 49)
+          ]);
+        } catch (error) {
+          console.error('Error recording watch history:', error);
+        }
+      }
     } catch (error) {
       console.error(`Error loading details for movie ${movie.id}:`, error);
       // Fallback to basic movie data if details fail
       setSelectedMovie(movie);
     }
-  }, []);
+  }, [user]);
 
   const handleCloseModal = useCallback(() => {
     setSelectedMovie(null);
@@ -216,21 +203,21 @@ function App() {
       setUser(result.user);
       setFavorites(result.favorites || []);
       setWatchHistory(result.watchHistory || []);
-      localStorage.setItem('token', result.token);
       setShowAuthModal(false);
       
       // Switch to discover view after login
       setActiveView('discover');
+      return result;
     } catch (error) {
       throw error;
     }
   };
 
   const handleLogout = () => {
+    AuthService.logout();
     setUser(null);
     setFavorites([]);
     setWatchHistory([]);
-    localStorage.removeItem('token');
     setActiveView('discover');
     setSearchQuery('');
     setFilters({ genre: '', year: '', rating: '' });
@@ -241,6 +228,7 @@ function App() {
   const toggleFavorite = async (movie) => {
     if (!user) {
       setShowAuthModal(true);
+      setAuthMode('login');
       return;
     }
 
@@ -256,25 +244,11 @@ function App() {
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
-    }
-  };
-
-  const recordWatch = async (movieId) => {
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
-    try {
-      await FavoritesService.recordWatch(movieId);
-      // Update local watch history
-      const historyItem = await FavoritesService.getMovieDetails(movieId);
-      setWatchHistory(prev => [
-        { ...historyItem, watched_at: new Date().toISOString() },
-        ...prev.slice(0, 49)
-      ]);
-    } catch (error) {
-      console.error('Error recording watch:', error);
+      // If there's an error, show auth modal (token might be expired)
+      if (error.response?.status === 401) {
+        setShowAuthModal(true);
+        setAuthMode('login');
+      }
     }
   };
 
@@ -291,13 +265,38 @@ function App() {
     }
   };
 
+  // Get genre names for movies
+  const getGenreNames = useCallback((movie) => {
+    if (movie.genre_names && movie.genre_names.length > 0) {
+      return movie.genre_names;
+    }
+    
+    if (movie.genres && movie.genres.length > 0) {
+      return movie.genres.map(g => g.name || g);
+    }
+    
+    if (movie.genre_ids && movie.genre_ids.length > 0 && genres.length > 0) {
+      const genreNames = movie.genre_ids.map(genreId => {
+        const genre = genres.find(g => g.id === genreId);
+        return genre ? genre.name : 'Unknown';
+      }).filter(name => name !== 'Unknown');
+      
+      return genreNames;
+    }
+    
+    return [];
+  }, [genres]);
+
   return (
     <div className="app">
       <Header 
         onSearch={handleSearch}
         searchQuery={searchQuery}
         user={user}
-        onAuthClick={() => setShowAuthModal(true)}
+        onAuthClick={() => {
+          setShowAuthModal(true);
+          setAuthMode('login');
+        }}
         onLogout={handleLogout}
         activeView={activeView}
         onViewChange={handleViewChange}
@@ -312,7 +311,11 @@ function App() {
               onMovieClick={handleMovieClick}
               isLoading={loading}
               user={user}
-              onWatchTrailer={recordWatch}
+              onWatchTrailer={(movie) => {
+                if (user && movie) {
+                  FavoritesService.recordWatch(movie).catch(console.error);
+                }
+              }}
             />
             
             <FilterSection 
@@ -334,6 +337,13 @@ function App() {
           />
         )}
         
+        {activeView === 'favorites' && (
+          <div className="favorites-header">
+            <h2>Your Favorite Movies</h2>
+            <p>{favorites.length} movies in your collection</p>
+          </div>
+        )}
+
         {error && (
           <div className="error-message">
             <h3>⚠️ {error}</h3>
@@ -359,12 +369,11 @@ function App() {
                 favorites={favorites}
                 user={user}
                 activeView={activeView}
-                genres={genres}
                 getGenreNames={getGenreNames}
               />
               
-              {/* Load More Button */}
-              {activeView === 'discover' && hasMoreMovies && !searchQuery && (
+              {/* Load More Button - Only show for discover view with no active search/filters */}
+              {activeView === 'discover' && hasMoreMovies && !searchQuery && Object.values(filters).every(val => !val) && (
                 <div className="load-more-container">
                   <button 
                     className="load-more-btn"
@@ -382,10 +391,29 @@ function App() {
                 </div>
               )}
 
-              {filteredMovies.length === 0 && !loading && !error && (
+              {filteredMovies.length === 0 && !loading && (
                 <div className="no-results">
-                  <h3>No movies found</h3>
-                  <p>Try adjusting your search or filters.</p>
+                  <h3>
+                    {activeView === 'favorites' ? 'No favorite movies yet' : 
+                     activeView === 'profile' ? 'No movies to display' : 
+                     'No movies found'}
+                  </h3>
+                  <p>
+                    {activeView === 'favorites' ? 'Start adding movies to your favorites!' : 
+                     activeView === 'profile' ? 'Your watch history and favorites will appear here' : 
+                     'Try adjusting your search or filters.'}
+                  </p>
+                  {activeView === 'favorites' && !user && (
+                    <button 
+                      className="auth-prompt-btn"
+                      onClick={() => {
+                        setShowAuthModal(true);
+                        setAuthMode('login');
+                      }}
+                    >
+                      Log in to add favorites
+                    </button>
+                  )}
                 </div>
               )}
             </motion.div>
@@ -399,7 +427,11 @@ function App() {
             movie={selectedMovie}
             onClose={handleCloseModal}
             onToggleFavorite={toggleFavorite}
-            onWatchTrailer={recordWatch}
+            onWatchTrailer={(movie) => {
+              if (user && movie) {
+                FavoritesService.recordWatch(movie).catch(console.error);
+              }
+            }}
             isFavorite={favorites.some(fav => fav.id === selectedMovie.id)}
             user={user}
           />

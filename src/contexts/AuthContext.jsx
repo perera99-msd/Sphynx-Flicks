@@ -80,6 +80,14 @@ export const AuthProvider = ({ children }) => {
     setFavorites(newFavorites);
   };
 
+  const updateWatchlist = (newWatchlist) => {
+    setWatchlist(newWatchlist);
+  };
+
+  const addToWatchHistory = (movie) => {
+    setWatchHistory(prev => [movie, ...prev.slice(0, 49)]);
+  };
+
   const value = {
     user,
     favorites,
@@ -89,6 +97,8 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateFavorites,
+    updateWatchlist,
+    addToWatchHistory,
     loading
   };
 

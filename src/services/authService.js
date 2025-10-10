@@ -12,6 +12,9 @@ export const AuthService = {
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('favorites', JSON.stringify(response.data.favorites || []));
+        localStorage.setItem('watchlist', JSON.stringify(response.data.watchlist || []));
+        localStorage.setItem('watchHistory', JSON.stringify(response.data.watchHistory || []));
       }
       
       return response.data;
@@ -28,6 +31,9 @@ export const AuthService = {
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('favorites', JSON.stringify(response.data.favorites || []));
+        localStorage.setItem('watchlist', JSON.stringify(response.data.watchlist || []));
+        localStorage.setItem('watchHistory', JSON.stringify(response.data.watchHistory || []));
       }
       
       return response.data;
@@ -52,6 +58,9 @@ export const AuthService = {
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('favorites');
+    localStorage.removeItem('watchlist');
+    localStorage.removeItem('watchHistory');
   },
 
   getToken() {
@@ -61,5 +70,14 @@ export const AuthService = {
   getUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
+  },
+
+  getFavorites() {
+    const favorites = localStorage.getItem('favorites');
+    return favorites ? JSON.parse(favorites) : [];
+  },
+
+  updateFavorites(favorites) {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
   }
 };

@@ -34,7 +34,126 @@ body {
   min-height: calc(100vh - 80px);
   padding-top: 0;
 }
+/* Add these styles to your App.css */
 
+.favorites-header {
+  text-align: center;
+  padding: 2rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  margin: 2rem 0;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.favorites-header h2 {
+  font-family: 'Cinzel', serif;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.favorites-header p {
+  color: var(--text-secondary);
+}
+
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 12px;
+  margin: 2rem 0;
+}
+
+.error-message h3 {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+}
+
+.error-message button {
+  background: var(--gold-primary);
+  color: var(--primary-dark);
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.error-message button:hover {
+  background: var(--gold-secondary);
+  transform: translateY(-2px);
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.load-more-btn {
+  background: var(--gradient-gold);
+  color: var(--primary-dark);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-more {
+  padding: 2rem 0;
+}
+
+.no-results {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 2px dashed rgba(212, 175, 55, 0.3);
+}
+
+.no-results h3 {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.no-results p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.auth-prompt-btn {
+  background: var(--gradient-gold);
+  color: var(--primary-dark);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.auth-prompt-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+}
 /* Load More Button Styles */
 .load-more-container {
   display: flex;

@@ -1,7 +1,9 @@
+/* src/components/UserProfile/UserProfile.css */
 .user-profile {
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  min-height: 80vh;
 }
 
 .profile-header {
@@ -95,6 +97,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid rgba(212, 175, 55, 0.3);
+  background: var(--card-bg);
 }
 
 .favorite-movie-card:hover {
@@ -125,6 +128,7 @@
   font-size: 0.9rem;
   margin: 0;
   flex: 1;
+  color: white;
 }
 
 .favorite-btn {
@@ -167,6 +171,7 @@
   padding: 1rem 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   transition: background 0.3s ease;
+  cursor: pointer;
 }
 
 .history-item:hover {
@@ -196,6 +201,25 @@
   border: 2px dashed rgba(212, 175, 55, 0.3);
 }
 
+.not-logged-in {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 2px dashed rgba(212, 175, 55, 0.3);
+}
+
+.not-logged-in h2 {
+  color: var(--gold-primary);
+  margin-bottom: 1rem;
+  font-family: 'Cinzel', serif;
+}
+
+.not-logged-in p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .user-profile {
@@ -214,5 +238,11 @@
   
   .favorites-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  .history-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }
