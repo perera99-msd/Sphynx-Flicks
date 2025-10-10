@@ -1,7 +1,8 @@
 // src/services/movieService.js
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
+// Change this to your local backend
+const API_BASE_URL = 'http://localhost:3001/api';
 
 const convertGenreIdsToNames = (movies, genres) => {
   return movies.map(movie => ({
@@ -14,14 +15,15 @@ const convertGenreIdsToNames = (movies, genres) => {
 };
 
 export const MovieService = {
-  genres: [], // Initialize genres array
+  genres: [],
 
   async getPopularMovies(page = 1) {
     try {
+      console.log('Fetching popular movies from:', `${API_BASE_URL}/movies/popular?page=${page}`);
       const response = await axios.get(`${API_BASE_URL}/movies/popular?page=${page}`);
       const movies = response.data;
+      console.log('Popular movies response:', movies);
       
-      // If we have genres, convert genre_ids to genre_names
       if (this.genres && this.genres.length > 0) {
         return convertGenreIdsToNames(movies, this.genres);
       }
@@ -38,7 +40,6 @@ export const MovieService = {
       const response = await axios.get(`${API_BASE_URL}/movies/search?query=${encodeURIComponent(query)}&page=${page}`);
       const movies = response.data;
       
-      // If we have genres, convert genre_ids to genre_names
       if (this.genres && this.genres.length > 0) {
         return convertGenreIdsToNames(movies, this.genres);
       }
@@ -65,7 +66,6 @@ export const MovieService = {
       const response = await axios.get(`${API_BASE_URL}/movies/trending`);
       const movies = response.data;
       
-      // If we have genres, convert genre_ids to genre_names
       if (this.genres && this.genres.length > 0) {
         return convertGenreIdsToNames(movies, this.genres);
       }
@@ -82,7 +82,6 @@ export const MovieService = {
       const response = await axios.get(`${API_BASE_URL}/movies/genre/${genreId}?page=${page}`);
       const movies = response.data;
       
-      // If we have genres, convert genre_ids to genre_names
       if (this.genres && this.genres.length > 0) {
         return convertGenreIdsToNames(movies, this.genres);
       }
@@ -98,12 +97,10 @@ export const MovieService = {
     try {
       const response = await axios.get(`${API_BASE_URL}/genres`);
       const genresData = response.data;
-      // Store genres for future use
       this.genres = genresData;
       return genresData;
     } catch (error) {
       console.error('Error fetching genres:', error);
-      // Return fallback genres if API fails
       this.genres = FALLBACK_GENRES;
       return FALLBACK_GENRES;
     }

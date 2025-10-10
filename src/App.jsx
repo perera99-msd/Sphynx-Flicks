@@ -12,6 +12,7 @@ import UserProfile from './components/UserProfile/UserProfile';
 import { MovieService } from './services/movieService';
 import { AuthService } from './services/authService';
 import { FavoritesService } from './services/favoritesService';
+import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 
 const HERO_MOVIES_COUNT = 5;
@@ -36,6 +37,14 @@ function App() {
   const [genres, setGenres] = useState([]);
   const [error, setError] = useState(null);
 
+
+  function App() {
+  return (
+    <AuthProvider>
+      {/* Your app components */}
+    </AuthProvider>
+  );
+}
   // Add getGenreNames function
   const getGenreNames = useCallback((movie) => {
     if (movie.genre_names && movie.genre_names.length > 0) {
