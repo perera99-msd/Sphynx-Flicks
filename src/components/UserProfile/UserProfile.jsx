@@ -4,9 +4,6 @@ import { motion } from 'framer-motion';
 import './UserProfile.css';
 
 const UserProfile = ({ user, favorites, watchHistory, onMovieClick, onToggleFavorite }) => {
-  // A placeholder image for movies without a poster
-  const placeholderImage = 'https://via.placeholder.com/200x300?text=No+Image';
-
   return (
     <div className="user-profile">
       <div className="profile-header">
@@ -40,32 +37,32 @@ const UserProfile = ({ user, favorites, watchHistory, onMovieClick, onToggleFavo
           {favorites.length > 0 ? (
             <div className="favorites-grid">
               {favorites.map(movie => (
-                // Defensive check: Ensure movie and movie.id exist before rendering
-                movie && movie.id && (
-                  <motion.div
-                    key={movie.id}
-                    className="favorite-movie-card"
-                    whileHover={{ scale: 1.05 }}
-                    onClick={() => onMovieClick(movie)}
-                  >
-                    <img 
-                      src={movie.poster_path || placeholderImage} 
-                      alt={movie.title || 'Movie Title'} 
-                    />
-                    <div className="movie-overlay">
-                      <h4>{movie.title}</h4>
-                      <button
-                        className="favorite-btn active"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleFavorite(movie);
-                        }}
-                      >
-                        ♥
-                      </button>
-                    </div>
-                  </motion.div>
-                )
+                <motion.div
+                  key={movie.id}
+                  className="favorite-movie-card"
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => onMovieClick(movie)}
+                >
+                  <img 
+                    src={movie.poster_path || '/placeholder-movie.jpg'} 
+                    alt={movie.title}
+                    onError={(e) => {
+                      e.target.src = '/placeholder-movie.jpg';
+                    }}
+                  />
+                  <div className="movie-overlay">
+                    <h4>{movie.title}</h4>
+                    <button
+                      className="favorite-btn active"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite(movie);
+                      }}
+                    >
+                      ♥
+                    </button>
+                  </div>
+                </motion.div>
               ))}
             </div>
           ) : (
@@ -78,17 +75,19 @@ const UserProfile = ({ user, favorites, watchHistory, onMovieClick, onToggleFavo
           {watchHistory.length > 0 ? (
             <div className="history-list">
               {watchHistory.slice(0, 10).map((item, index) => (
-                // Defensive check: Ensure item and its properties exist
-                item && item.movie_id && item.watched_at && (
-                  <div key={`${item.movie_id}-${index}`} className="history-item">
-                    <span className="movie-title">
-                      {item.movie_data?.title || `Movie ID: ${item.movie_id}`}
-                    </span>
-                    <span className="watch-date">
-                      {new Date(item.watched_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                )
+                <motion.div 
+                  key={index} 
+                  className="history-item"
+                  whileHover={{ backgroundColor: 'rgba(212, 175, 55, 0.1)' }}
+                  onClick={() => onMovieClick(item.movie_data)}
+                >
+                  <span className="movie-title">
+                    {item.movie_data?.title || `Movie ${item.movie_id}`}
+                  </span>
+                  <span className="watch-date">
+                    {new Date(item.watched_at).toLocaleDateString()}
+                  </span>
+                </motion.div>
               ))}
             </div>
           ) : (

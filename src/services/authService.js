@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
 
-const AuthService = {
+export const AuthService = {
   async login(credentials) {
     try {
       const response = await axios.post(`${API_BASE_URL}/login`, credentials);
@@ -35,5 +35,3 @@ const AuthService = {
     }
   }
 };
-
-export { AuthService };
