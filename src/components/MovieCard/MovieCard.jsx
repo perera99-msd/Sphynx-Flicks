@@ -1,7 +1,7 @@
-// src/components/MovieCard/MovieCard.jsx - PREMIUM BLUE
+// src/components/MovieCard/MovieCard.jsx - CLEAN & FOCUSED
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiHeart, FiStar, FiClock, FiEye } from 'react-icons/fi';
+import { FiHeart, FiStar, FiClock } from 'react-icons/fi';
 import './MovieCard.css';
 
 const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenreNames }) => {
@@ -18,11 +18,6 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
 
   const getReleaseYear = (date) => {
     return date ? new Date(date).getFullYear() : 'N/A';
-  };
-
-  const truncateOverview = (text, maxLength = 100) => {
-    if (!text) return '';
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
   const formatRuntime = (minutes) => {
@@ -49,10 +44,10 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
     <motion.div
       className="movie-card"
       onClick={handleCardClick}
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -30, scale: 0.95 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       whileHover={{ scale: 1.02 }}
       layout
     >
@@ -94,35 +89,23 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
         <h3 className="movie-title">{movie.title}</h3>
         
         {genres.length > 0 && (
-          <div className="genre-section">
-            <div className="genres">
-              {genres.slice(0, 2).map((genre, index) => (
-                <span key={index} className="genre-tag">
-                  {genre}
-                </span>
-              ))}
-              {genres.length > 2 && (
-                <span className="genre-tag">+{genres.length - 2}</span>
-              )}
-            </div>
+          <div className="genres">
+            {genres.slice(0, 3).map((genre, index) => (
+              <span key={index} className="genre-tag">
+                {genre}
+              </span>
+            ))}
+            {genres.length > 3 && (
+              <span className="genre-tag">+{genres.length - 3}</span>
+            )}
           </div>
         )}
         
-        <p className="movie-overview">
-          {truncateOverview(movie.overview, 90)}
-        </p>
-        
         <div className="movie-meta">
           <div className="release-year">{releaseYear}</div>
-          <div className="movie-stats">
-            <div className="stat">
-              <FiClock />
-              <span>{formatRuntime(movie.runtime)}</span>
-            </div>
-            <div className="stat">
-              <FiEye />
-              <span>{movie.vote_count || 0}</span>
-            </div>
+          <div className="runtime">
+            <FiClock />
+            <span>{formatRuntime(movie.runtime)}</span>
           </div>
         </div>
       </div>
