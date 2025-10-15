@@ -12,25 +12,13 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
   const [swiperInstance, setSwiperInstance] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const handleWatchTrailer = async (movie, event) => {
+  const handleWatchTrailer = (movie, event) => {
     event.stopPropagation();
-    
-    try {
-      // Check if trailer data is already available
-      if (movie.trailer && movie.trailer.key) {
-        // Direct YouTube trailer logic
-        window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
-        // Record watch history if user is logged in
-        if (user && onWatchTrailer) {
-          onWatchTrailer(movie.id);
-        }
-      } else {
-        // If no trailer data, show message
-        alert('Trailer not available for this movie');
-      }
-    } catch (error) {
-      console.error('Error playing trailer:', error);
-      alert('Error playing trailer. Please try again.');
+    // FIX: Delegate the trailer action to the parent component (App.jsx),
+    // which has the central logic for playing trailers. This now matches
+    // the working logic from MovieModal.
+    if (onWatchTrailer) {
+      onWatchTrailer(movie);
     }
   };
 
