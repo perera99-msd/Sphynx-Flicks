@@ -106,6 +106,7 @@ function App() {
           setHeroMovies(moviesData.slice(0, HERO_MOVIES_COUNT));
         }
       }
+      
       setHasMoreMovies(moviesData.length === MOVIES_PER_PAGE);
       setCurrentPage(page);
     } catch (error) {
