@@ -15,11 +15,11 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
   const handleWatchTrailer = (movie, event) => {
     event.stopPropagation();
     
-    // FIX: Match the same logic as MovieModal
-    // MovieModal checks: if (movie.trailer) { onWatchTrailer(movie); }
+    // FIX: Match the exact same logic as MovieModal
     if (movie.trailer) {
       onWatchTrailer(movie);
     } else {
+      // Show the same alert as MovieModal would if trailer is not available
       alert('Trailer not available for this movie');
     }
   };
