@@ -10,7 +10,8 @@ const MovieGrid = ({
   onToggleFavorite, 
   favorites, 
   user, 
-  activeView 
+  activeView,
+  getGenreNames
 }) => {
   const isFavorite = (movie) => favorites.some(fav => fav.id === movie.id);
 
@@ -77,6 +78,7 @@ const MovieGrid = ({
                   onToggleFavorite={onToggleFavorite}
                   isFavorite={isFavorite(movie)}
                   user={user}
+                  getGenreNames={getGenreNames}
                 />
               </motion.div>
             ))}

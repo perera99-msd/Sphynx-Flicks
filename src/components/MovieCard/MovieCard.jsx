@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { FiHeart, FiStar, FiPlay } from 'react-icons/fi';
 import './MovieCard.css';
 
-const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, genres, getGenreNames }) => {
+const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenreNames }) => {
   const handleFavoriteClick = (e) => {
     e.stopPropagation();
     if (user) {
@@ -20,7 +20,7 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, genres,
     return date ? new Date(date).getFullYear() : 'N/A';
   };
 
-  const movieGenres = getGenreNames(movie);
+  const movieGenres = getGenreNames ? getGenreNames(movie) : [];
 
   return (
     <motion.div

@@ -1,4 +1,4 @@
-/* src/App.css - ENHANCED */
+/* src/App.css - PREMIUM ENHANCED */
 :root {
   --primary-dark: #050505;
   --secondary-dark: #0f0f13;
@@ -7,9 +7,13 @@
   --text-secondary: #94a3b8;
   --blue-primary: #3b82f6;
   --blue-accent: #60a5fa;
+  --blue-dark: #1e40af;
   --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
-  --card-bg: rgba(30, 41, 59, 0.7);
-  --card-border: rgba(255, 255, 255, 0.08);
+  --gradient-dark: linear-gradient(135deg, #050505 0%, #0f172a 50%, #1e293b 100%);
+  --card-bg: rgba(30, 41, 59, 0.8);
+  --card-border: rgba(59, 130, 246, 0.15);
+  --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-blue: 0 8px 32px rgba(59, 130, 246, 0.2);
 }
 
 * {
@@ -30,7 +34,7 @@ body {
 
 .app {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--primary-dark) 0%, #0f172a 100%);
+  background: var(--gradient-dark);
 }
 
 .main-content {
@@ -42,7 +46,7 @@ body {
 .load-more-container {
   display: flex;
   justify-content: center;
-  padding: 2rem;
+  padding: 3rem 2rem;
 }
 
 .load-more-btn {
@@ -50,21 +54,22 @@ body {
   color: white;
   border: none;
   border-radius: 16px;
-  padding: 1rem 2.5rem;
-  font-size: 1rem;
+  padding: 1.2rem 3rem;
+  font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-blue);
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid var(--card-border);
+  letter-spacing: 0.5px;
 }
 
 .load-more-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.6);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.4);
 }
 
 .load-more-btn:disabled {
@@ -80,8 +85,8 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s;
 }
 
 .load-more-btn:hover::before {
@@ -91,81 +96,88 @@ body {
 .loading-more {
   display: flex;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 2rem;
 }
 
 /* Enhanced No Results Styles */
 .no-results {
   text-align: center;
-  padding: 3rem 2rem;
+  padding: 4rem 2rem;
   color: var(--text-secondary);
 }
 
 .no-results h3 {
-  font-size: 1.3rem;
-  margin-bottom: 0.75rem;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
   color: var(--text-primary);
   background: linear-gradient(135deg, #ffffff, #94a3b8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  font-weight: 700;
 }
 
 .no-results p {
-  font-size: 0.95rem;
+  font-size: 1rem;
   opacity: 0.8;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 /* Enhanced Error Message */
 .error-message {
   text-align: center;
-  padding: 2rem;
+  padding: 2.5rem;
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 16px;
-  margin: 1.5rem;
-  backdrop-filter: blur(10px);
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  border-radius: 20px;
+  margin: 2rem auto;
+  backdrop-filter: blur(20px);
+  max-width: 500px;
+  box-shadow: var(--shadow-dark);
 }
 
 .error-message h3 {
   color: #ef4444;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .error-message button {
   background: var(--gradient-blue);
   color: white;
   border: none;
-  border-radius: 10px;
-  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  padding: 1rem 2rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .error-message button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
 }
 
-/* Enhanced Scrollbar Styling */
+/* Premium Scrollbar Styling */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--secondary-dark);
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--gradient-blue);
-  border-radius: 4px;
+  border-radius: 8px;
+  border: 2px solid var(--secondary-dark);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -181,14 +193,67 @@ button, .movie-card, .tab-btn, .control-btn {
 button:focus-visible,
 .movie-card:focus-visible {
   outline: 2px solid var(--blue-primary);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* Premium selection styling */
+::selection {
+  background: var(--blue-primary);
+  color: white;
+}
+
+/* Loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 1.5s infinite linear;
+  background: linear-gradient(to right, #1e293b 8%, #334155 18%, #1e293b 33%);
+  background-size: 800px 104px;
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .load-more-btn {
-    padding: 0.9rem 2rem;
-    font-size: 0.95rem;
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+  }
+  
+  .no-results {
+    padding: 3rem 1.5rem;
+  }
+  
+  .no-results h3 {
+    font-size: 1.3rem;
+  }
+  
+  .error-message {
+    margin: 1.5rem;
+    padding: 2rem;
+  }
+  
+  .error-message h3 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .load-more-container {
+    padding: 2rem 1rem;
   }
   
   .no-results {
@@ -204,22 +269,8 @@ button:focus-visible,
     padding: 1.5rem;
   }
   
-  .error-message h3 {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .load-more-container {
-    padding: 1.5rem;
-  }
-  
-  .no-results {
-    padding: 1.5rem 1rem;
-  }
-  
-  .error-message {
-    margin: 0.5rem;
-    padding: 1rem;
+  .error-message button {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
   }
 }

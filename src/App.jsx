@@ -65,14 +65,13 @@ function App() {
           try {
             const userData = await AuthService.verifyToken(token);
             setUser(userData.user);
-            // Load favorites and history from localStorage
             const localFavorites = await FavoritesService.getFavorites();
             const localWatchHistory = await FavoritesService.getWatchHistory();
             setFavorites(localFavorites);
             setWatchHistory(localWatchHistory);
           } catch (error) {
             console.error('Token verification failed:', error);
-            handleLogout(); // Clear session if token is invalid
+            handleLogout();
           }
         }
       } catch (error) {
@@ -97,7 +96,6 @@ function App() {
       
       if (append) {
         setMovies(prev => {
-          // Filter out duplicates before appending
           const existingIds = new Set(prev.map(movie => movie.id));
           const newMovies = moviesData.filter(movie => !existingIds.has(movie.id));
           return [...prev, ...newMovies];
@@ -170,7 +168,6 @@ function App() {
         ? await AuthService.login(credentials)
         : await AuthService.register(credentials);
       
-      // Clear local storage for the new user session
       localStorage.removeItem('favorites');
       localStorage.removeItem('watchHistory');
       
@@ -222,7 +219,6 @@ function App() {
   const recordWatch = async (movieId) => {
     if (!user) return;
     try {
-      // Find the movie in the current movies list
       const movie = movies.find(m => m.id === movieId) || 
                    heroMovies.find(m => m.id === movieId) || 
                    favorites.find(m => m.id === movieId);
@@ -249,7 +245,6 @@ function App() {
     }
   };
 
-  // Handle YouTube trailer play
   const handlePlayTrailer = (movie) => {
     if (movie.trailer) {
       window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
@@ -324,8 +319,7 @@ function App() {
                 favorites={favorites} 
                 user={user} 
                 activeView={activeView} 
-                genres={genres} 
-                getGenreNames={getGenreNames} 
+                getGenreNames={getGenreNames}
               />
               
               {activeView === 'discover' && hasMoreMovies && !loadingMore && (
