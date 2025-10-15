@@ -298,7 +298,7 @@ function App() {
               onMovieClick={handleMovieClick} 
               isLoading={loading} 
               user={user} 
-              onWatchTrailer={recordWatch} 
+              onWatchTrailer={handlePlayTrailer} 
             />
             <FilterSection 
               filters={filters} 
