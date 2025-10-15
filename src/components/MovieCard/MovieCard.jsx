@@ -1,86 +1,120 @@
 // src/components/MovieCard/MovieCard.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiHeart, FiStar } from 'react-icons/fi';
+import { FiHeart, FiStar, FiPlay, FiClock, FiEye } from 'react-icons/fi';
 import './MovieCard.css';
 
-const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenreNames }) => {
+const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, genres, getGenreNames }) => {
   const handleFavoriteClick = (e) => {
-    e.stopPropagation(); // Prevent card click event when favoriting
+    e.stopPropagation();
     if (user) {
       onToggleFavorite(movie);
     }
-    // Optionally, you could trigger the auth modal if the user is not logged in
-    // else { onShowAuthModal(); }
   };
 
   const handleCardClick = () => {
     onClick(movie);
   };
 
-  const getReleaseYear = (date) => (date ? new Date(date).getFullYear() : 'N/A');
+  const getReleaseYear = (date) => {
+    return date ? new Date(date).getFullYear() : 'N/A';
+  };
+
+  const formatRuntime = (minutes) => {
+    if (!minutes) return 'N/A';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  };
 
   const movieGenres = getGenreNames(movie);
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
-    }
-  };
 
   return (
     <motion.div
       className="movie-card"
       onClick={handleCardClick}
-      variants={cardVariants}
-      layout
+      whileHover={{ 
+        y: -8,
+        transition: { duration: 0.3, ease: "easeOut" }
+      }}
+      whileTap={{ scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
     >
-      <div className="card-image-wrapper">
-        <motion.img
-          src={movie.poster_path}
+      <div className="card-image">
+        <img 
+          src={movie.poster_path} 
           alt={movie.title}
-          className="card-image"
           onError={(e) => {
-            e.target.src = 'https://placehold.co/500x750/0f172a/3b82f6?text=Poster+Not+Found';
+            e.target.src = 'https://images.unsplash.com/photo-1489599809505-7c8e1c8bfd39?w=400&h=600&fit=crop';
           }}
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
         />
-        <div className="card-image-overlay" />
-
-        <motion.button
-          className={`favorite-button ${isFavorite ? 'active' : ''}`}
-          onClick={handleFavoriteClick}
-          disabled={!user}
-          title={!user ? 'Login to add favorites' : isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <FiHeart fill={isFavorite ? 'currentColor' : 'none'} />
-        </motion.button>
+        
+        <div className="card-overlay">
+          <button className="play-button">
+            <FiPlay />
+          </button>
+          
+          <button 
+            className={`favorite-button ${isFavorite ? 'active' : ''}`}
+            onClick={handleFavoriteClick}
+            disabled={!user}
+            title={!user ? 'Login to add favorites' : isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <FiHeart fill={isFavorite ? 'currentColor' : 'none'} />
+          </button>
+        </div>
 
         {movie.vote_average > 0 && (
           <div className="rating-badge">
-            <FiStar fill="currentColor" />
+            <FiStar />
             <span>{movie.vote_average.toFixed(1)}</span>
+          </div>
+        )}
+
+        {movie.runtime && (
+          <div className="runtime-badge">
+            <FiClock />
+            <span>{formatRuntime(movie.runtime)}</span>
           </div>
         )}
       </div>
 
       <div className="card-content">
-        <h3 className="movie-title" title={movie.title}>{movie.title}</h3>
+        <h3 className="movie-title">{movie.title}</h3>
+        
         <div className="movie-meta">
-          <span className="meta-year">{getReleaseYear(movie.release_date)}</span>
-          {movieGenres.length > 0 && (
-            <>
-              <span className="meta-divider" />
-              <span className="meta-genre">{movieGenres[0]}</span>
-            </>
+          <span className="release-year">{getReleaseYear(movie.release_date)}</span>
+          {movie.popularity && (
+            <div className="popularity">
+              <FiEye />
+              <span>{(movie.popularity / 10).toFixed(0)}K</span>
+            </div>
           )}
         </div>
+
+        {movie.overview && (
+          <p className="movie-overview">
+            {movie.overview.length > 120 
+              ? `${movie.overview.substring(0, 120)}...` 
+              : movie.overview
+            }
+          </p>
+        )}
+
+        {movieGenres.length > 0 && (
+          <div className="genres">
+            {movieGenres.slice(0, 3).map((genre, index) => (
+              <span key={index} className="genre-tag">
+                {genre}
+              </span>
+            ))}
+            {movieGenres.length > 3 && (
+              <span className="genre-more">+{movieGenres.length - 3}</span>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );
