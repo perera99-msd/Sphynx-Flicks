@@ -266,16 +266,21 @@ function App() {
     }
   };
 
-  const handlePlayTrailer = (movie) => {
-    if (movie.trailer && movie.trailer.key) {
+  
+ const handlePlayTrailer = (movie) => {
+    console.log('Movie object in handlePlayTrailer:', movie);
+    console.log('Trailer data:', movie.trailer);
+  
+    
+    if (movie.trailer) {
       window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
       if (user) {
-        recordWatch(movie.id);
+      recordWatch(movie.id);
       }
     } else {
-      alert('Trailer not available for this movie');
+       alert('Trailer not available for this movie');
     }
-  };
+  }; 
 
   return (
     <div className="app">
