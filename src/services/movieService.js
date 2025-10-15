@@ -1,10 +1,10 @@
 // src/services/movieService.js
 import axios from 'axios';
 
-// Use your actual backend URL (replace with your deployed worker URL)
-const API_BASE_URL = 'https://movie-app-backend.msdperera99.workers.dev';
+// ✅ Use your actual backend URL with /api prefix
+const API_BASE_URL = 'https://movie-app-backend.msdperera99.workers.dev/api';
 
-// For local development, you might use:
+// For local development, you can uncomment this:
 // const API_BASE_URL = 'http://localhost:8787/api';
 
 const convertGenreIdsToNames = (movies, genres) => {
@@ -28,7 +28,6 @@ export const MovieService = {
       if (this.genres && this.genres.length > 0) {
         return convertGenreIdsToNames(movies, this.genres);
       }
-      
       return movies;
     } catch (error) {
       console.error('Error fetching popular movies:', error);
@@ -44,7 +43,6 @@ export const MovieService = {
       if (this.genres && this.genres.length > 0) {
         return convertGenreIdsToNames(movies, this.genres);
       }
-      
       return movies;
     } catch (error) {
       console.error('Error searching movies:', error);
@@ -81,7 +79,6 @@ export const MovieService = {
       if (this.genres && this.genres.length > 0) {
         return convertGenreIdsToNames(movies, this.genres);
       }
-      
       return movies;
     } catch (error) {
       console.error('Error fetching trending movies:', error);
