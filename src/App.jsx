@@ -96,7 +96,12 @@ function App() {
         : await MovieService.getPopularMovies(page);
       
       if (append) {
-        setMovies(prev => [...prev, ...moviesData]);
+        setMovies(prev => {
+          // Filter out duplicates before appending
+          const existingIds = new Set(prev.map(movie => movie.id));
+          const newMovies = moviesData.filter(movie => !existingIds.has(movie.id));
+          return [...prev, ...newMovies];
+        });
       } else {
         setMovies(moviesData);
         if (page === 1 && !searchQuery && moviesData.length > 0) {
@@ -133,7 +138,7 @@ function App() {
 
   const handleMovieClick = useCallback(async (movie) => {
     try {
-      const detailedMovie = await MovieService.getMovieDetails(movie.id, movie.source);
+      const detailedMovie = await MovieService.getMovieDetails(movie.id);
       setSelectedMovie(detailedMovie);
     } catch (error) {
       console.error(`Error loading details for movie ${movie.id}:`, error);
@@ -142,13 +147,16 @@ function App() {
   }, []);
 
   const handleCloseModal = useCallback(() => setSelectedMovie(null), []);
+  
   const handleSearch = useCallback((query) => {
     setSearchQuery(query);
     setCurrentPage(1);
     setHasMoreMovies(true);
     loadMovies(1, false);
   }, []);
+  
   const handleFilterChange = useCallback((newFilters) => setFilters(newFilters), []);
+  
   const clearFilters = useCallback(() => {
     setFilters({ genre: '', year: '', rating: '' });
     setSearchQuery('');
@@ -214,11 +222,18 @@ function App() {
   const recordWatch = async (movieId) => {
     if (!user) return;
     try {
-      const newHistoryItem = await FavoritesService.recordWatch(movieId);
-      setWatchHistory(prev => [
-        newHistoryItem, 
-        ...prev.filter(item => item.movie_id !== movieId)
-      ].slice(0, 50));
+      // Find the movie in the current movies list
+      const movie = movies.find(m => m.id === movieId) || 
+                   heroMovies.find(m => m.id === movieId) || 
+                   favorites.find(m => m.id === movieId);
+      
+      if (movie) {
+        const newHistoryItem = await FavoritesService.recordWatch(movie);
+        setWatchHistory(prev => [
+          newHistoryItem, 
+          ...prev.filter(item => item.movie_id !== movieId)
+        ].slice(0, 50));
+      }
     } catch (error) {
       console.error('Error recording watch:', error);
     }
@@ -231,6 +246,18 @@ function App() {
       setFilters({ genre: '', year: '', rating: '' });
     } else if (activeView !== 'discover') {
       loadMovies(1, false);
+    }
+  };
+
+  // Handle YouTube trailer play
+  const handlePlayTrailer = (movie) => {
+    if (movie.trailer) {
+      window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
+      if (user) {
+        recordWatch(movie.id);
+      }
+    } else {
+      alert('Trailer not available for this movie');
     }
   };
 
@@ -250,12 +277,29 @@ function App() {
       <main className="main-content">
         {activeView === 'discover' && (
           <>
-            <Hero movies={heroMovies} onMovieClick={handleMovieClick} isLoading={loading} user={user} onWatchTrailer={recordWatch} />
-            <FilterSection filters={filters} onFilterChange={handleFilterChange} onClearFilters={clearFilters} genres={genres} />
+            <Hero 
+              movies={heroMovies} 
+              onMovieClick={handleMovieClick} 
+              isLoading={loading} 
+              user={user} 
+              onWatchTrailer={recordWatch} 
+            />
+            <FilterSection 
+              filters={filters} 
+              onFilterChange={handleFilterChange} 
+              onClearFilters={clearFilters} 
+              genres={genres} 
+            />
           </>
         )}
         {activeView === 'profile' && user && (
-          <UserProfile user={user} favorites={favorites} watchHistory={watchHistory} onMovieClick={handleMovieClick} onToggleFavorite={toggleFavorite} />
+          <UserProfile 
+            user={user} 
+            favorites={favorites} 
+            watchHistory={watchHistory} 
+            onMovieClick={handleMovieClick} 
+            onToggleFavorite={toggleFavorite} 
+          />
         )}
         
         {error && (
@@ -273,7 +317,16 @@ function App() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <MovieGrid movies={filteredMovies} onMovieClick={handleMovieClick} onToggleFavorite={toggleFavorite} favorites={favorites} user={user} activeView={activeView} genres={genres} getGenreNames={getGenreNames} />
+              <MovieGrid 
+                movies={filteredMovies} 
+                onMovieClick={handleMovieClick} 
+                onToggleFavorite={toggleFavorite} 
+                favorites={favorites} 
+                user={user} 
+                activeView={activeView} 
+                genres={genres} 
+                getGenreNames={getGenreNames} 
+              />
               
               {activeView === 'discover' && hasMoreMovies && !loadingMore && (
                 <div className="load-more-container">
@@ -295,10 +348,27 @@ function App() {
       </main>
 
       <AnimatePresence>
-        {selectedMovie && <MovieModal movie={selectedMovie} onClose={handleCloseModal} onToggleFavorite={toggleFavorite} onWatchTrailer={recordWatch} isFavorite={favorites.some(fav => fav.id === selectedMovie.id)} user={user} />}
+        {selectedMovie && (
+          <MovieModal 
+            movie={selectedMovie} 
+            onClose={handleCloseModal} 
+            onToggleFavorite={toggleFavorite} 
+            onWatchTrailer={handlePlayTrailer}
+            isFavorite={favorites.some(fav => fav.id === selectedMovie.id)} 
+            user={user} 
+          />
+        )}
       </AnimatePresence>
+      
       <AnimatePresence>
-        {showAuthModal && <AuthModal mode={authMode} onModeChange={setAuthMode} onAuth={handleAuth} onClose={() => setShowAuthModal(false)} />}
+        {showAuthModal && (
+          <AuthModal 
+            mode={authMode} 
+            onModeChange={setAuthMode} 
+            onAuth={handleAuth} 
+            onClose={() => setShowAuthModal(false)} 
+          />
+        )}
       </AnimatePresence>
     </div>
   );
