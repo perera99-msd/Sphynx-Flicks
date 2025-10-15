@@ -1,4 +1,4 @@
-// src/components/Footer/Footer.jsx - PREMIUM SIMPLIFIED DESIGN
+// src/components/Footer/Footer.jsx - PREMIUM COMPACT DESIGN
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FiHeart, FiGithub, FiLinkedin, FiMail } from 'react-icons/fi';
@@ -12,7 +12,6 @@ const Footer = () => {
     { name: 'Features', href: '#features' },
     { name: 'Privacy', href: '#privacy' },
     { name: 'Terms', href: '#terms' },
-    { name: 'Contact', href: 'mailto:contact@sphynxflicks.com' }
   ];
 
   const socialLinks = [
@@ -27,10 +26,12 @@ const Footer = () => {
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      viewport={{ once: true, amount: 0.5 }}
+      viewport={{ once: true, amount: 0.2 }}
     >
       <div className="footer-content">
-        <motion.div 
+        {/* Left Side: Logo and Copyright */}
+        <div className="footer-left">
+          <motion.div 
             className="footer-logo-simple"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             whileHover={{ scale: 1.05 }}
@@ -39,48 +40,52 @@ const Footer = () => {
             <span className="logo-icon">🎬</span>
             <span>SPHYNX FLICKS</span>
           </motion.div>
-
-        <nav className="footer-nav">
-          {footerLinks.map((link, index) => (
-            <a 
-              key={link.name} 
-              href={link.href} 
-              className="footer-link"
-            >
-              {link.name}
-            </a>
-          ))}
-        </nav>
-
-        <div className="footer-social">
-          {socialLinks.map((social) => (
-            <motion.a
-              key={social.name}
-              href={social.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="social-link"
-              whileHover={{ scale: 1.1, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {social.icon}
-              <span className="sr-only">{social.name}</span>
-            </motion.a>
-          ))}
+          <div className="footer-copyright">
+            <p>
+              © {currentYear} SPHYNX FLICKS. Made with 
+              <motion.span 
+                className="heart-icon"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
+              >
+                <FiHeart />
+              </motion.span>
+              by <a href="https://github.com/your-username" target="_blank" rel="noopener noreferrer" className="developer-name">M S D PERERA</a>
+            </p>
+          </div>
         </div>
 
-        <div className="footer-copyright">
-          <p>
-            © {currentYear} SPHYNX FLICKS. Made with{' '}
-            <motion.span 
-              className="heart-icon"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-            >
-              <FiHeart />
-            </motion.span>{' '}
-            by <span className="developer-name">M S D PERERA</span>
-          </p>
+        {/* Right Side: Navigation and Social Links */}
+        <div className="footer-right">
+          <nav className="footer-nav">
+            {footerLinks.map((link) => (
+              <a 
+                key={link.name} 
+                href={link.href} 
+                className="footer-link"
+              >
+                {link.name}
+              </a>
+            ))}
+          </nav>
+
+          <div className="footer-social">
+            {socialLinks.map((social) => (
+              <motion.a
+                key={social.name}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-link"
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              >
+                {social.icon}
+                <span className="sr-only">{social.name}</span>
+              </motion.a>
+            ))}
+          </div>
         </div>
       </div>
     </motion.footer>
