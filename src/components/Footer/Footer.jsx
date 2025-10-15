@@ -38,7 +38,7 @@ const Footer = () => {
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
             <img 
-              src="/logo.jpg" 
+              src="logo.jpg" 
               alt="Sphynx Flicks Logo" 
               className="footer-logo-image"
             />

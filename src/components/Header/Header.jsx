@@ -110,7 +110,7 @@ const Header = ({
             >
               <div className="logo">
                 <img 
-                  src="/logo.jpg"
+                  src="logo.jpg"
                   alt="Sphynx Flicks Logo" 
                   className="logo-image"
                 />
@@ -263,7 +263,7 @@ const Header = ({
               <div className="mobile-menu-header">
                 <div className="mobile-logo">
                   <img 
-                    src="/logo.jpg" 
+                    src="logo.jpg" 
                     alt="Sphynx Flicks Logo" 
                     className="mobile-logo-image"
                   />
