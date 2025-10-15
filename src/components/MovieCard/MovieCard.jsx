@@ -1,7 +1,7 @@
 // src/components/MovieCard/MovieCard.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiHeart, FiStar, FiPlay, FiClock, FiEye } from 'react-icons/fi';
+import { FiHeart, FiStar, FiPlay } from 'react-icons/fi';
 import './MovieCard.css';
 
 const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, genres, getGenreNames }) => {
@@ -18,13 +18,6 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, genres,
 
   const getReleaseYear = (date) => {
     return date ? new Date(date).getFullYear() : 'N/A';
-  };
-
-  const formatRuntime = (minutes) => {
-    if (!minutes) return 'N/A';
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
   };
 
   const movieGenres = getGenreNames(movie);
@@ -72,13 +65,6 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, genres,
             <span>{movie.vote_average.toFixed(1)}</span>
           </div>
         )}
-
-        {movie.runtime && (
-          <div className="runtime-badge">
-            <FiClock />
-            <span>{formatRuntime(movie.runtime)}</span>
-          </div>
-        )}
       </div>
 
       <div className="card-content">
@@ -86,32 +72,22 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, genres,
         
         <div className="movie-meta">
           <span className="release-year">{getReleaseYear(movie.release_date)}</span>
-          {movie.popularity && (
-            <div className="popularity">
-              <FiEye />
-              <span>{(movie.popularity / 10).toFixed(0)}K</span>
-            </div>
+          {movieGenres.length > 0 && (
+            <span className="genre-preview">
+              {movieGenres[0]}
+            </span>
           )}
         </div>
 
-        {movie.overview && (
-          <p className="movie-overview">
-            {movie.overview.length > 120 
-              ? `${movie.overview.substring(0, 120)}...` 
-              : movie.overview
-            }
-          </p>
-        )}
-
         {movieGenres.length > 0 && (
           <div className="genres">
-            {movieGenres.slice(0, 3).map((genre, index) => (
+            {movieGenres.slice(0, 2).map((genre, index) => (
               <span key={index} className="genre-tag">
                 {genre}
               </span>
             ))}
-            {movieGenres.length > 3 && (
-              <span className="genre-more">+{movieGenres.length - 3}</span>
+            {movieGenres.length > 2 && (
+              <span className="genre-more">+{movieGenres.length - 2}</span>
             )}
           </div>
         )}
