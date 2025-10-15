@@ -1,5 +1,5 @@
-// src/components/MovieModal/MovieModal.jsx - PREMIUM PROFESSIONAL (REVISED V2)
-import React, { useState } from 'react';
+// src/components/MovieModal/MovieModal.jsx - PREMIUM PROFESSIONAL (REVISED V3 - DUAL COLUMN)
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiX, 
@@ -8,10 +8,7 @@ import {
   FiClock, 
   FiHeart, 
   FiPlay,
-  FiUsers,
-  FiDollarSign,
-  FiGlobe,
-  FiFilm
+  FiChevronRight
 } from 'react-icons/fi';
 import './MovieModal.css';
 
@@ -23,7 +20,6 @@ const MovieModal = ({
   user,
   onWatchTrailer 
 }) => {
-  const [activeTab, setActiveTab] = useState('overview');
 
   const handleFavoriteClick = (e) => {
     e.stopPropagation();
@@ -51,20 +47,11 @@ const MovieModal = ({
     return `${hours}h ${mins}m`;
   };
 
-  const formatCurrency = (amount) => {
-    if (!amount || amount === 0) return 'N/A';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const getReleaseYear = (date) => {
     return date ? new Date(date).getFullYear() : 'N/A';
   };
 
-  const posterImg = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '/api/placeholder/500/750?text=No+Image';
+  const posterImg = movie.poster_path ? `https://image.tmdb.org/t/p/w780${movie.poster_path}` : '/api/placeholder/500/750?text=No+Image';
   const backdropImg = movie.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}` : posterImg;
 
   return (
@@ -78,147 +65,95 @@ const MovieModal = ({
       >
         <motion.div
           className="movie-modal"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ type: "spring", damping: 30, stiffness: 300, duration: 0.3 }}
+          style={{ backgroundImage: `url(${backdropImg})` }}
+          initial={{ y: "100vh", opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "100vh", opacity: 0 }}
+          transition={{ type: "spring", damping: 40, stiffness: 300 }}
         >
-          <div 
-            className="modal-hero"
-            style={{ backgroundImage: `url(${backdropImg})` }}
-          >
-            <div className="hero-overlay">
-              <div className="hero-content">
-                <motion.img 
-                  src={posterImg} 
-                  alt={movie.title}
-                  className="modal-poster"
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                />
-                <div className="hero-details">
-                  <motion.h1 
-                    className="modal-title"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
+          <div className="modal-content-wrapper">
+            {/* LEFT PANE - VISUALS */}
+            <motion.div 
+              className="modal-left-pane"
+              initial={{ x: -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <img src={posterImg} alt={movie.title} className="modal-poster" />
+              <div className="poster-actions">
+                <button 
+                  className="play-trailer-btn"
+                  onClick={handlePlayTrailer}
+                  disabled={!movie.trailer}
+                >
+                  <FiPlay />
+                  <span>{movie.trailer ? 'Watch Trailer' : 'No Trailer'}</span>
+                </button>
+                 <button
+                    className={`favorite-btn-modal ${isFavorite ? 'active' : ''}`}
+                    onClick={handleFavoriteClick}
+                    disabled={!user}
+                    title={!user ? 'Login to add favorites' : isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                   >
-                    {movie.title}
-                  </motion.h1>
-                  
-                  <motion.div 
-                    className="modal-meta"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                  >
-                    <span className="meta-item"><FiStar /> {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</span>
-                    <span className="meta-item"><FiCalendar /> {getReleaseYear(movie.release_date)}</span>
-                    <span className="meta-item"><FiClock /> {formatRuntime(movie.runtime)}</span>
-                  </motion.div>
-                  
-                  {movie.genres && movie.genres.length > 0 && (
-                    <motion.div 
-                      className="genres"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.5 }}
-                    >
-                      {movie.genres.slice(0, 4).map(genre => (
-                        <span key={genre.id} className="genre-tag">
-                          {genre.name}
-                        </span>
-                      ))}
-                    </motion.div>
-                  )}
+                    <FiHeart />
+                    <span>{isFavorite ? 'Favorited' : 'Add to Favorites'}</span>
+                </button>
+              </div>
+            </motion.div>
 
-                  <motion.div 
-                    className="modal-actions"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.6 }}
-                  >
-                    <button 
-                      className="play-btn"
-                      onClick={handlePlayTrailer}
-                      disabled={!movie.trailer}
-                    >
-                      <FiPlay />
-                      <span>{movie.trailer ? 'Watch Trailer' : 'No Trailer'}</span>
-                    </button>
-                    <button
-                      className={`favorite-btn-modal ${isFavorite ? 'active' : ''}`}
-                      onClick={handleFavoriteClick}
-                      disabled={!user}
-                      title={!user ? 'Login to add favorites' : isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                    >
-                      <FiHeart />
-                    </button>
-                  </motion.div>
+            {/* RIGHT PANE - DETAILS */}
+            <motion.div 
+              className="modal-right-pane"
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <div className="right-pane-header">
+                <h1 className="modal-title">{movie.title}</h1>
+                <p className="tagline">{movie.tagline}</p>
+                <div className="modal-meta">
+                  <span className="meta-item rating">
+                    <FiStar /> {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
+                  </span>
+                  <span className="meta-item"><FiCalendar /> {getReleaseYear(movie.release_date)}</span>
+                  <span className="meta-item"><FiClock /> {formatRuntime(movie.runtime)}</span>
+                  <span className="meta-item status">{movie.status}</span>
+                </div>
+                <div className="genres">
+                  {movie.genres?.map(genre => (
+                    <span key={genre.id} className="genre-tag">{genre.name}</span>
+                  ))}
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div className="modal-body">
-            <div className="tab-navigation">
-              <button className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>Overview</button>
-              <button className={`tab-btn ${activeTab === 'details' ? 'active' : ''}`} onClick={() => setActiveTab('details')}>Details</button>
-              {movie.cast && movie.cast.length > 0 && (
-                <button className={`tab-btn ${activeTab === 'cast' ? 'active' : ''}`} onClick={() => setActiveTab('cast')}>Cast & Crew</button>
-              )}
-            </div>
-
-            <div className="tab-content">
-              {activeTab === 'overview' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h3>Storyline</h3>
-                  <p className="movie-overview">{movie.overview || 'No overview available.'}</p>
-                  {movie.tagline && <p className="tagline">"{movie.tagline}"</p>}
-                </motion.div>
-              )}
-
-              {activeTab === 'details' && (
-                 <motion.div className="details-tab" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <div className="detail-item"><FiDollarSign /><span>Budget:</span> <strong>{formatCurrency(movie.budget)}</strong></div>
-                  <div className="detail-item"><FiDollarSign /><span>Revenue:</span> <strong>{formatCurrency(movie.revenue)}</strong></div>
-                  <div className="detail-item"><FiGlobe /><span>Language:</span> <strong>{movie.original_language?.toUpperCase()}</strong></div>
-                  <div className="detail-item"><FiFilm /><span>Status:</span> <strong>{movie.status}</strong></div>
-                  
-                  {movie.production_companies && movie.production_companies.length > 0 && (
-                    <div className="production-section">
-                      <h4>Production</h4>
-                      <div className="companies-list">
-                        {movie.production_companies.map(c => c.logo_path && (
-                          <div key={c.id} className="company-logo-wrapper" title={c.name}>
-                            <img src={`https://image.tmdb.org/t/p/w200${c.logo_path}`} alt={c.name} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                 </motion.div>
-              )}
-
-              {activeTab === 'cast' && movie.cast && (
-                <motion.div className="cast-list" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  {movie.cast.slice(0, 14).map(person => (
-                    <div key={person.cast_id} className="cast-member">
-                      <img 
+              <div className="right-pane-body">
+                <h3>Synopsis</h3>
+                <p className="movie-overview">{movie.overview || 'No overview available.'}</p>
+                
+                <h3>Cast Highlights</h3>
+                <div className="cast-highlights">
+                  {movie.cast?.slice(0, 5).map(person => (
+                    <div key={person.cast_id} className="cast-member-highlight">
+                       <img 
                         src={person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : '/api/placeholder/200/200?text=N/A'}
                         alt={person.name}
-                        className="cast-photo"
+                        className="cast-photo-highlight"
                       />
-                      <div className="cast-info">
+                      <div className="cast-info-highlight">
                         <p className="cast-name">{person.name}</p>
                         <p className="cast-character">{person.character}</p>
                       </div>
                     </div>
                   ))}
-                </motion.div>
-              )}
-            </div>
+                  {movie.cast && movie.cast.length > 5 && (
+                    <div className="cast-member-highlight view-all">
+                       <FiChevronRight />
+                       <span>View Full Cast</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
           </div>
           
           <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
