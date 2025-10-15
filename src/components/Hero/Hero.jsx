@@ -1,4 +1,4 @@
-// src/components/Hero/Hero.jsx - PREMIUM PROFESSIONAL (REVISED)
+// src/components/Hero/Hero.jsx - FIXED FOR BACKEND TRAILER STRUCTURE
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -14,11 +14,13 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
 
   const handleWatchTrailer = (movie, event) => {
     event.stopPropagation();
-    // FIX: Delegate the trailer action to the parent component (App.jsx),
-    // which has the central logic for playing trailers. This now matches
-    // the working logic from MovieModal.
-    if (onWatchTrailer) {
+    
+    // FIX: Check trailer data based on your backend structure
+    // Your backend returns: trailer: data.videos?.results?.find(video => video.type === 'Trailer' && video.site === 'YouTube') || null
+    if (movie.trailer && movie.trailer.key) {
       onWatchTrailer(movie);
+    } else {
+      alert('Trailer not available for this movie');
     }
   };
 
@@ -132,9 +134,10 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
                         <button
                           className="btn btn-primary"
                           onClick={(e) => handleWatchTrailer(movie, e)}
+                          disabled={!movie.trailer || !movie.trailer.key}
                         >
                           <FiPlay />
-                          <span>Watch Trailer</span>
+                          <span>{movie.trailer && movie.trailer.key ? 'Watch Trailer' : 'No Trailer'}</span>
                         </button>
                         <button
                           className="btn btn-secondary"
