@@ -1,4 +1,4 @@
-// src/components/Hero/Hero.jsx - PREMIUM PROFESSIONAL (REVISED & FIXED)
+// src/components/Hero/Hero.jsx - FIXED VERSION
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -12,43 +12,27 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
   const [swiperInstance, setSwiperInstance] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Helper function to fetch full movie details
-  const fetchMovieDetails = async (movieId) => {
-    // This is the API endpoint from your original App.jsx to get detailed movie info
-    const response = await fetch(`https://backend.msdperera99.workers.dev/api/movies/${movieId}`);
-    if (!response.ok) {
-        throw new Error('Failed to fetch movie details');
-    }
-    return await response.json();
-  };
-
-  // CORRECTED: Restored the original, robust trailer handling logic
+  // CORRECTED: Safe trailer handling
   const handleWatchTrailer = async (movie, event) => {
     event.stopPropagation();
     
-    // First, check if the trailer link is already in the movie object
-    if (movie.trailer) {
-      window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
-      if (user) {
-        onWatchTrailer(movie.id);
-      }
-      return;
-    }
-
-    // If not, fetch the full details for the movie
     try {
-      const detailedMovie = await fetchMovieDetails(movie.id);
-      if (detailedMovie && detailedMovie.trailer) {
-        window.open(`https://www.youtube.com/watch?v=${detailedMovie.trailer.key}`, '_blank');
+      if (movie.trailer && movie.trailer.key) {
+        window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
         if (user) {
           onWatchTrailer(movie.id);
         }
       } else {
-        alert('Trailer not available for this movie.');
+        // Try to use the onWatchTrailer prop which should handle trailer fetching
+        if (onWatchTrailer) {
+          onWatchTrailer(movie);
+        } else {
+          alert('Trailer not available for this movie.');
+        }
       }
     } catch (error) {
-      console.error("Error fetching movie details for trailer:", error);
-      alert('Could not retrieve trailer information.');
+      console.error("Error playing trailer:", error);
+      alert('Could not play trailer. Please try again.');
     }
   };
 
@@ -57,7 +41,49 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
     onMovieClick(movie);
   };
 
-  const getReleaseYear = (date) => (date ? new Date(date).getFullYear() : '');
+  // CORRECTED: Safe year extraction
+  const getReleaseYear = (date) => {
+    if (!date) return 'N/A';
+    try {
+      return new Date(date).getFullYear();
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  // CORRECTED: Safe genre extraction
+  const getGenres = (movie) => {
+    if (movie.genre_names && movie.genre_names.length > 0) {
+      return movie.genre_names.slice(0, 2);
+    }
+    if (movie.genres && movie.genres.length > 0) {
+      return movie.genres.slice(0, 2).map(g => g.name || g);
+    }
+    return [];
+  };
+
+  // CORRECTED: Safe image URL handling
+  const getBackdropImage = (movie) => {
+    if (movie.backdrop_path) {
+      // Check if it's already a full URL or needs prefix
+      if (movie.backdrop_path.startsWith('http')) {
+        return movie.backdrop_path;
+      }
+      return `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`;
+    }
+    // Fallback image or empty
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4MCIgaGVpZ2h0PSI3MjAiIHZpZXdCb3g9IjAgMCAxMjgwIDcyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEyODAiIGhlaWdodD0iNzIwIiBmaWxsPSIjMEEwQTBGIi8+CjxwYXRoIGQ9Ik02NDAgMzYwTDUyMCA1NDBINzYwTDY0MCAzNjBaIiBmaWxsPSIjM0I4MkY2IiBmaWxsLW9wYWNpdHk9IjAuMiIvPgo8L3N2Zz4K';
+  };
+
+  const getPosterImage = (movie) => {
+    if (movie.poster_path) {
+      if (movie.poster_path.startsWith('http')) {
+        return movie.poster_path;
+      }
+      return `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+    }
+    return getBackdropImage(movie); // Fallback to backdrop if no poster
+  };
 
   if (isLoading) {
     return (
@@ -114,14 +140,18 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
         className="hero-swiper"
       >
         {movies.map((movie) => (
-          <SwiperSlide key={movie.id}>
+          <SwiperSlide key={movie.id} className="hero-slide">
             {({ isActive }) => (
               <div className="hero-slide">
                 <div className="slide-background">
                   <img
-                    src={movie.backdrop_path}
-                    alt={movie.title}
+                    src={getBackdropImage(movie)}
+                    alt={movie.title || 'Movie backdrop'}
                     className="background-image"
+                    onError={(e) => {
+                      // Fallback if image fails to load
+                      e.target.style.display = 'none';
+                    }}
                   />
                   <div className="gradient-overlay"></div>
                 </div>
@@ -136,16 +166,16 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
                       transition={{ type: 'spring', damping: 30, stiffness: 200 }}
                     >
                       <div className="details-content">
-                        <h1 className="hero-title">{movie.title}</h1>
+                        <h1 className="hero-title">{movie.title || 'Untitled Movie'}</h1>
                         <div className="hero-meta">
                           <span className="meta-item rating">
-                            <FiStar /> {movie.vote_average?.toFixed(1)}
+                            <FiStar /> {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
                           </span>
                           <span className="meta-item">
                             <FiCalendar /> {getReleaseYear(movie.release_date)}
                           </span>
-                          {movie.genre_names?.slice(0, 2).map((genre) => (
-                            <span key={genre} className="meta-item genre">{genre}</span>
+                          {getGenres(movie).map((genre, index) => (
+                            <span key={index} className="meta-item genre">{genre}</span>
                           ))}
                         </div>
                       </div>
@@ -181,8 +211,14 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
             className={`thumbnail-item ${index === activeIndex ? 'active' : ''}`}
             onClick={() => swiperInstance?.slideToLoop(index)}
           >
-            <img src={movie.poster_path} alt={movie.title} />
-            <div className="thumbnail-overlay"></div>
+            <img 
+              src={getPosterImage(movie)} 
+              alt={movie.title || 'Movie poster'} 
+              onError={(e) => {
+                // Hide broken images
+                e.target.style.display = 'none';
+              }}
+            />
           </div>
         ))}
       </div>

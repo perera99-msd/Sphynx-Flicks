@@ -5,7 +5,7 @@ main = "src/index.js"
 [[d1_databases]]
 binding = "DB"
 database_name = "movie-app-db"
-database_id = "b992ffa5-0a23-49c1-9840-0e523799bdde"
+database_id = "93db578a-9032-42ee-a9b2-f4ff35e4cb05"
 
 [vars]
 JWT_SECRET = "default-secret-change-in-production"

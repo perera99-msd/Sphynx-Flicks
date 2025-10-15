@@ -1,4 +1,4 @@
-// src/App.jsx - PREMIUM CINEMA BLUE THEME (FULLY CORRECTED)
+// src/App.jsx - PREMIUM CINEMA BLUE THEME (FULLY CORRECTED & FIXED)
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header/Header';
@@ -178,15 +178,17 @@ function App() {
         moviesToFilter = favorites;
         break;
       case 'profile':
-        moviesToFilter = watchHistory.map(item => item.movie);
+        moviesToFilter = watchHistory.map(item => item.movie_data || item.movie);
         break;
       default:
         moviesToFilter = movies;
     }
 
     return moviesToFilter.filter(movie => {
+      if (!movie) return false;
+      
       const searchMatch = searchQuery ? 
-        movie.title.toLowerCase().includes(searchQuery.toLowerCase()) : true;
+        movie.title?.toLowerCase().includes(searchQuery.toLowerCase()) : true;
       
       const genreMatch = filters.genre ? 
         movie.genre_ids?.includes(parseInt(filters.genre)) : true;
@@ -327,17 +329,17 @@ function App() {
     }
   };
 
-  // Trailer playback with enhanced error handling
+  // FIXED: Trailer playback with enhanced error handling
   const handlePlayTrailer = async (movie) => {
     try {
       let trailerMovie = movie;
       
       // Ensure we have trailer data
-      if (!movie.trailer) {
+      if (!movie.trailer || !movie.trailer.key) {
         trailerMovie = await loadTrailerData(movie);
       }
       
-      if (trailerMovie.trailer) {
+      if (trailerMovie.trailer && trailerMovie.trailer.key) {
         window.open(`https://www.youtube.com/watch?v=${trailerMovie.trailer.key}`, '_blank');
         
         // Record watch if user is logged in
@@ -352,6 +354,26 @@ function App() {
       alert('Unable to play trailer. Please try again later.');
     }
   };
+
+  // FIXED: Enhanced Hero movie data preparation
+  const preparedHeroMovies = useMemo(() => {
+    return heroMovies.map(movie => ({
+      ...movie,
+      // Ensure proper image URLs
+      backdrop_path: movie.backdrop_path?.startsWith('http') 
+        ? movie.backdrop_path 
+        : movie.backdrop_path 
+          ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
+          : null,
+      poster_path: movie.poster_path?.startsWith('http')
+        ? movie.poster_path
+        : movie.poster_path
+          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+          : null,
+      // Ensure genre names
+      genre_names: getGenreNames(movie)
+    }));
+  }, [heroMovies, getGenreNames]);
 
   // Render loading state
   if (loading && activeView === 'discover' && movies.length === 0) {
@@ -395,7 +417,7 @@ function App() {
         {activeView === 'discover' && (
           <>
             <Hero 
-              movies={heroMovies} 
+              movies={preparedHeroMovies} 
               onMovieClick={handleMovieClick} 
               isLoading={loading && heroMovies.length === 0} 
               user={user} 
