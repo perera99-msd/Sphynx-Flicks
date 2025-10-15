@@ -1,11 +1,7 @@
 // src/services/movieService.js
 import axios from 'axios';
 
-// Replace with your actual worker URL after deployment
 const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
-
-// For local testing during development
-// const API_BASE_URL = 'http://localhost:8787/api';
 
 const convertGenreIdsToNames = (movies, genres) => {
   return movies.map(movie => ({
@@ -59,6 +55,20 @@ export const MovieService = {
     } catch (error) {
       console.error('Error fetching movie details:', error);
       throw error;
+    }
+  },
+
+  // ADD THIS FUNCTION
+  async getMovieTrailer(movieId) {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/movies/${movieId}`);
+      const movieData = response.data;
+      
+      // Return the trailer if available, otherwise null
+      return movieData.trailer || null;
+    } catch (error) {
+      console.error('Error fetching movie trailer:', error);
+      return null;
     }
   },
 
