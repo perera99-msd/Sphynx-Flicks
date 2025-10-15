@@ -14,10 +14,14 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
 
   const handleWatchTrailer = (movie, event) => {
     event.stopPropagation();
-    // The existing logic for trailer fetching remains the same
-    if (movie.trailer) {
+    
+    // Direct YouTube trailer logic
+    if (movie.trailer && movie.trailer.key) {
       window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
-      if (user) onWatchTrailer(movie.id);
+      // Record watch history if user is logged in
+      if (user && onWatchTrailer) {
+        onWatchTrailer(movie.id);
+      }
     } else {
       alert('Trailer not available for this movie');
     }
@@ -33,9 +37,37 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
   if (isLoading) {
     return (
       <section className="hero loading-hero" aria-label="Loading...">
-        <div className="loading-content">
-          <div className="loading-spinner"></div>
-          <p>Loading featured movies...</p>
+        <div className="loading-container">
+          <motion.div 
+            className="loading-spinner"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <div className="spinner-ring"></div>
+            <div className="spinner-glow"></div>
+            <div className="spinner-inner"></div>
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="loading-text"
+          >
+            Loading amazing content...
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="loading-subtext"
+          >
+            Preparing your cinematic experience
+          </motion.p>
+          <div className="loading-dots">
+            <div className="loading-dot"></div>
+            <div className="loading-dot"></div>
+            <div className="loading-dot"></div>
+          </div>
         </div>
       </section>
     );
