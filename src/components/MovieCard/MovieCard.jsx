@@ -1,4 +1,4 @@
-// src/components/MovieCard/MovieCard.jsx - CLEAN & FOCUSED
+// src/components/MovieCard/MovieCard.jsx - PREMIUM PROFESSIONAL
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FiHeart, FiStar, FiClock } from 'react-icons/fi';
@@ -44,15 +44,22 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
     <motion.div
       className="movie-card"
       onClick={handleCardClick}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -30, scale: 0.95 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
       whileHover={{ scale: 1.02 }}
       layout
     >
       {isNew && (
-        <div className="new-badge">New</div>
+        <motion.div 
+          className="new-badge"
+          initial={{ scale: 0, rotate: -10 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          New
+        </motion.div>
       )}
       
       <div className="card-image">
@@ -79,17 +86,34 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
           </motion.button>
         </div>
         
-        <div className="rating-badge">
+        <motion.div 
+          className="rating-badge"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1 }}
+        >
           <FiStar fill="currentColor" />
           {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
-        </div>
+        </motion.div>
       </div>
       
       <div className="card-content">
-        <h3 className="movie-title">{movie.title}</h3>
+        <motion.h3 
+          className="movie-title"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          {movie.title}
+        </motion.h3>
         
         {genres.length > 0 && (
-          <div className="genres">
+          <motion.div 
+            className="genres"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
             {genres.slice(0, 3).map((genre, index) => (
               <span key={index} className="genre-tag">
                 {genre}
@@ -98,16 +122,21 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
             {genres.length > 3 && (
               <span className="genre-tag">+{genres.length - 3}</span>
             )}
-          </div>
+          </motion.div>
         )}
         
-        <div className="movie-meta">
+        <motion.div 
+          className="movie-meta"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
           <div className="release-year">{releaseYear}</div>
           <div className="runtime">
             <FiClock />
             <span>{formatRuntime(movie.runtime)}</span>
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );
