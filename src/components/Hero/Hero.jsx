@@ -1,28 +1,16 @@
-// src/components/Hero/Hero.jsx - FIXED TO MATCH MOVIEMODAL LOGIC
+// src/components/Hero/Hero.jsx - PROFESSIONAL REDESIGN (NO TRAILER BUTTON)
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade } from 'swiper/modules';
-import { FiPlay, FiInfo, FiStar, FiCalendar } from 'react-icons/fi';
+import { FiInfo, FiStar, FiCalendar, FiPlayCircle } from 'react-icons/fi';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 import './Hero.css';
 
-const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) => {
+const Hero = ({ movies = [], onMovieClick, isLoading, user }) => {
   const [swiperInstance, setSwiperInstance] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
-
-  const handleWatchTrailer = (movie, event) => {
-    event.stopPropagation();
-    
-    // FIX: Match the exact same logic as MovieModal
-    if (movie.trailer) {
-      onWatchTrailer(movie);
-    } else {
-      // Show the same alert as MovieModal would if trailer is not available
-      alert('Trailer not available for this movie');
-    }
-  };
 
   const handleMoreInfo = (movie, event) => {
     event.stopPropagation();
@@ -30,6 +18,12 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
   };
 
   const getReleaseYear = (date) => (date ? new Date(date).getFullYear() : '');
+
+  const truncateOverview = (overview, maxLength = 200) => {
+    if (!overview) return '';
+    if (overview.length <= maxLength) return overview;
+    return overview.substring(0, maxLength) + '...';
+  };
 
   if (isLoading) {
     return (
@@ -50,7 +44,7 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
             transition={{ delay: 0.2 }}
             className="loading-text"
           >
-            Loading amazing content...
+            Curating Cinematic Excellence
           </motion.p>
           <motion.p
             initial={{ opacity: 0 }}
@@ -58,13 +52,8 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
             transition={{ delay: 0.4 }}
             className="loading-subtext"
           >
-            Preparing your cinematic experience
+            Preparing your premium viewing experience
           </motion.p>
-          <div className="loading-dots">
-            <div className="loading-dot"></div>
-            <div className="loading-dot"></div>
-            <div className="loading-dot"></div>
-          </div>
         </div>
       </section>
     );
@@ -74,8 +63,9 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
     return (
       <section className="hero no-movies">
         <div className="no-movies-content">
-          <h2>No Featured Movies</h2>
-          <p>Check back later for new releases</p>
+          <FiPlayCircle size={64} className="no-movies-icon" />
+          <h2>Featured Content Coming Soon</h2>
+          <p>Stay tuned for our premium movie selections</p>
         </div>
       </section>
     );
@@ -89,8 +79,8 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         effect="fade"
         fadeEffect={{ crossFade: true }}
-        speed={1500}
-        autoplay={{ delay: 8000, disableOnInteraction: false }}
+        speed={1800}
+        autoplay={{ delay: 10000, disableOnInteraction: false }}
         loop={true}
         className="hero-swiper"
       >
@@ -103,49 +93,88 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
                     src={movie.backdrop_path}
                     alt={movie.title}
                     className="background-image"
+                    loading="eager"
                   />
                   <div className="gradient-overlay"></div>
+                  <div className="vignette-overlay"></div>
                 </div>
 
                 <AnimatePresence>
                   {isActive && (
                     <motion.div
-                      className="hero-details-container"
-                      initial={{ opacity: 0, y: 100 }}
+                      className="hero-content"
+                      initial={{ opacity: 0, y: 60 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 100 }}
-                      transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+                      exit={{ opacity: 0, y: 60 }}
+                      transition={{ 
+                        type: 'spring', 
+                        damping: 25, 
+                        stiffness: 200,
+                        delay: 0.3
+                      }}
                     >
-                      <div className="details-content">
-                        <h1 className="hero-title">{movie.title}</h1>
-                        <div className="hero-meta">
+                      <div className="hero-text-content">
+                        <motion.div
+                          className="featured-badge"
+                          initial={{ opacity: 0, x: -30 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.5 }}
+                        >
+                          <FiPlayCircle />
+                          <span>Featured Presentation</span>
+                        </motion.div>
+
+                        <motion.h1 
+                          className="hero-title"
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.6 }}
+                        >
+                          {movie.title}
+                        </motion.h1>
+
+                        <motion.div
+                          className="hero-meta"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.7 }}
+                        >
                           <span className="meta-item rating">
                             <FiStar /> {movie.vote_average?.toFixed(1)}
                           </span>
-                          <span className="meta-item">
+                          <span className="meta-item year">
                             <FiCalendar /> {getReleaseYear(movie.release_date)}
                           </span>
-                          {movie.genre_names?.slice(0, 2).map((genre) => (
-                            <span key={genre} className="meta-item genre">{genre}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="details-actions">
-                        <button
-                          className="btn btn-primary"
-                          onClick={(e) => handleWatchTrailer(movie, e)}
-                          disabled={!movie.trailer}
+                          <div className="genre-tags">
+                            {movie.genre_names?.slice(0, 3).map((genre) => (
+                              <span key={genre} className="genre-tag">{genre}</span>
+                            ))}
+                          </div>
+                        </motion.div>
+
+                        <motion.p
+                          className="hero-overview"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.8 }}
                         >
-                          <FiPlay />
-                          <span>{movie.trailer ? 'Watch Trailer' : 'No Trailer'}</span>
-                        </button>
-                        <button
-                          className="btn btn-secondary"
-                          onClick={(e) => handleMoreInfo(movie, e)}
+                          {truncateOverview(movie.overview)}
+                        </motion.p>
+
+                        <motion.div
+                          className="hero-actions"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.9 }}
                         >
-                          <FiInfo />
-                          <span>More Info</span>
-                        </button>
+                          <button
+                            className="btn btn-primary"
+                            onClick={(e) => handleMoreInfo(movie, e)}
+                          >
+                            <FiInfo />
+                            <span>Explore Movie</span>
+                          </button>
+                        </motion.div>
                       </div>
                     </motion.div>
                   )}
@@ -156,17 +185,19 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
         ))}
       </Swiper>
 
-      <div className="hero-thumbnails">
-        {movies.map((movie, index) => (
-          <div
-            key={movie.id}
-            className={`thumbnail-item ${index === activeIndex ? 'active' : ''}`}
-            onClick={() => swiperInstance?.slideToLoop(index)}
-          >
-            <img src={movie.poster_path} alt={movie.title} />
-            <div className="thumbnail-overlay"></div>
-          </div>
-        ))}
+      {/* Progress Indicator */}
+      <div className="hero-progress">
+        <div className="progress-bar">
+          <div 
+            className="progress-fill" 
+            style={{ 
+              width: `${((activeIndex + 1) / movies.length) * 100}%` 
+            }}
+          ></div>
+        </div>
+        <div className="progress-text">
+          {activeIndex + 1} / {movies.length}
+        </div>
       </div>
     </section>
   );
