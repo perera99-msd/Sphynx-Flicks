@@ -1,4 +1,4 @@
-// src/components/MovieGrid/MovieGrid.jsx
+// src/components/MovieGrid/MovieGrid.jsx - PREMIUM
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MovieCard from '../MovieCard/MovieCard';
@@ -20,18 +20,20 @@ const MovieGrid = ({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.08
+        staggerChildren: 0.1,
+        delayChildren: 0.2
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 30, scale: 0.9 },
     visible: {
       opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
-        duration: 0.5,
+        duration: 0.6,
         ease: "easeOut"
       }
     }
@@ -40,22 +42,22 @@ const MovieGrid = ({
   const getGridTitle = () => {
     switch (activeView) {
       case 'favorites':
-        return `Your Favorites`;
+        return `Your Premium Collection`;
       case 'profile':
         return 'Recently Watched';
       default:
-        return 'Discover Movies';
+        return 'Premium Cinema';
     }
   };
 
   const getGridSubtitle = () => {
     switch (activeView) {
       case 'favorites':
-        return `Your personal collection of ${movies.length} favorite movies`;
+        return `Your curated collection of ${movies.length} exceptional films`;
       case 'profile':
-        return 'Movies you recently watched';
+        return 'Your recently enjoyed cinematic experiences';
       default:
-        return 'Explore our curated selection of popular movies';
+        return 'Discover the finest selection of premium movies and cinematic masterpieces';
     }
   };
 
@@ -63,15 +65,20 @@ const MovieGrid = ({
     <section className="movie-grid-section">
       <div className="container">
         {movies.length > 0 && (
-          <div className="grid-header">
+          <motion.div 
+            className="grid-header"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             <div>
               <h2 className="grid-title">{getGridTitle()}</h2>
               <p className="grid-subtitle">{getGridSubtitle()}</p>
             </div>
             <div className="grid-stats">
-              <span className="movie-count">{movies.length} {movies.length === 1 ? 'movie' : 'movies'}</span>
+              <span className="movie-count">{movies.length} {movies.length === 1 ? 'Masterpiece' : 'Masterpieces'}</span>
             </div>
-          </div>
+          </motion.div>
         )}
         
         <AnimatePresence mode="wait">
@@ -88,6 +95,9 @@ const MovieGrid = ({
                   key={`${movie.id}-${activeView}`}
                   variants={itemVariants}
                   layout
+                  whileHover={{ 
+                    transition: { duration: 0.3 } 
+                  }}
                 >
                   <MovieCard
                     movie={movie}
@@ -103,13 +113,13 @@ const MovieGrid = ({
           ) : (
             <motion.div 
               className="empty-state"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <div className="empty-state-icon">🎬</div>
-              <h3>No movies found</h3>
-              <p>Try adjusting your search criteria or explore different categories to find what you're looking for.</p>
+              <div className="empty-state-icon">🎭</div>
+              <h3>No Cinematic Masterpieces Found</h3>
+              <p>Refine your search criteria or explore different categories to discover exceptional films that match your taste.</p>
             </motion.div>
           )}
         </AnimatePresence>

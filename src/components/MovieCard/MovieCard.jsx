@@ -1,7 +1,7 @@
-// src/components/MovieCard/MovieCard.jsx
+// src/components/MovieCard/MovieCard.jsx - PREMIUM
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiHeart, FiStar } from 'react-icons/fi';
+import { FiHeart, FiStar, FiClock, FiEye } from 'react-icons/fi';
 import './MovieCard.css';
 
 const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenreNames }) => {
@@ -20,9 +20,24 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
     return date ? new Date(date).getFullYear() : 'N/A';
   };
 
-  const truncateOverview = (text, maxLength = 80) => {
+  const truncateOverview = (text, maxLength = 100) => {
     if (!text) return '';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
+
+  const formatRuntime = (minutes) => {
+    if (!minutes) return 'N/A';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  };
+
+  const isNewRelease = (date) => {
+    if (!date) return false;
+    const releaseDate = new Date(date);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return releaseDate > thirtyDaysAgo;
   };
 
   const movieGenres = getGenreNames ? getGenreNames(movie) : [];
@@ -32,20 +47,20 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
       className="movie-card"
       onClick={handleCardClick}
       whileHover={{ 
-        y: -6,
-        transition: { duration: 0.3, ease: "easeOut" }
+        y: -8,
+        transition: { duration: 0.4, ease: "easeOut" }
       }}
       whileTap={{ scale: 0.98 }}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4 }}
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <div className="card-image">
         <img 
           src={movie.poster_path} 
           alt={movie.title}
           onError={(e) => {
-            e.target.src = 'https://images.unsplash.com/photo-1489599809505-7c8e1c8bfd39?w=400&h=600&fit=crop';
+            e.target.src = 'https://images.unsplash.com/photo-1489599809505-7c8e1c8bfd39?w=400&h=600&fit=crop&q=80';
           }}
         />
         
@@ -68,6 +83,10 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
             <span>{movie.vote_average.toFixed(1)}</span>
           </div>
         )}
+
+        {isNewRelease(movie.release_date) && (
+          <div className="new-badge">New</div>
+        )}
       </div>
 
       <div className="card-content">
@@ -79,27 +98,37 @@ const MovieCard = ({ movie, onClick, onToggleFavorite, isFavorite, user, getGenr
           </p>
         )}
         
-        <div className="movie-meta">
-          <span className="release-year">{getReleaseYear(movie.release_date)}</span>
-          {movieGenres.length > 0 && (
-            <span className="genre-preview">
-              {movieGenres[0]}
-            </span>
-          )}
+        <div className="movie-stats">
+          <div className="stat">
+            <FiEye />
+            <span>{movie.popularity ? Math.round(movie.popularity) : 'N/A'}</span>
+          </div>
+          <div className="stat">
+            <FiClock />
+            <span>{formatRuntime(movie.runtime)}</span>
+          </div>
         </div>
 
         {movieGenres.length > 0 && (
           <div className="genres">
-            {movieGenres.slice(0, 2).map((genre, index) => (
+            {movieGenres.slice(0, 3).map((genre, index) => (
               <span key={index} className="genre-tag">
                 {genre}
               </span>
             ))}
-            {movieGenres.length > 2 && (
-              <span className="genre-tag">+{movieGenres.length - 2}</span>
+            {movieGenres.length > 3 && (
+              <span className="genre-tag">+{movieGenres.length - 3}</span>
             )}
           </div>
         )}
+        
+        <div className="movie-meta">
+          <span className="release-year">{getReleaseYear(movie.release_date)}</span>
+          <span className="runtime">
+            <FiClock />
+            {formatRuntime(movie.runtime)}
+          </span>
+        </div>
       </div>
     </motion.div>
   );

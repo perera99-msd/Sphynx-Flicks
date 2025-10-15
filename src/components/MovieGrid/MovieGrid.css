@@ -1,98 +1,177 @@
-/* src/components/MovieGrid/MovieGrid.css - PROFESSIONAL */
+/* src/components/MovieGrid/MovieGrid.css - PREMIUM */
 .movie-grid-section {
-  padding: 3rem 0;
+  padding: 4rem 0;
   background: transparent;
+  position: relative;
 }
 
 .container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 3rem;
 }
 
 .grid-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(79, 70, 229, 0.2);
+  align-items: flex-end;
+  margin-bottom: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  position: relative;
+}
+
+.grid-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100px;
+  height: 3px;
+  background: var(--gradient-gold);
+  border-radius: 2px;
 }
 
 .grid-title {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.5px;
+  font-size: 3rem;
+  font-weight: 800;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
+  line-height: 1.1;
 }
 
 .grid-subtitle {
   color: var(--text-secondary);
-  font-size: 1.1rem;
-  margin-top: 0.5rem;
+  font-size: 1.3rem;
+  margin-top: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 .grid-stats {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .movie-count {
-  background: var(--gradient-secondary);
-  color: white;
-  padding: 0.7rem 1.2rem;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  box-shadow: var(--shadow-blue);
+  background: var(--gradient-gold);
+  color: var(--primary-dark);
+  padding: 1rem 1.8rem;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: var(--shadow-gold);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(79, 70, 229, 0.3);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  letter-spacing: 0.5px;
 }
 
 .movie-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2.5rem;
   align-items: start;
 }
 
 .empty-state {
   text-align: center;
-  padding: 5rem 2rem;
+  padding: 8rem 2rem;
   color: var(--text-secondary);
+  background: rgba(21, 21, 31, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  margin: 2rem 0;
 }
 
 .empty-state-icon {
-  font-size: 4rem;
-  margin-bottom: 1.5rem;
-  opacity: 0.5;
+  font-size: 5rem;
+  margin-bottom: 2rem;
+  opacity: 0.6;
 }
 
 .empty-state h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 700;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .empty-state p {
-  font-size: 1rem;
-  opacity: 0.7;
-  max-width: 400px;
+  font-size: 1.2rem;
+  opacity: 0.8;
+  max-width: 500px;
   margin: 0 auto;
-  line-height: 1.6;
+  line-height: 1.7;
+  letter-spacing: 0.3px;
 }
 
-/* Responsive Design */
+/* Premium Responsive Design */
+@media (max-width: 1400px) {
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+}
+
 @media (max-width: 1200px) {
   .movie-grid {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.75rem;
+  }
+  
+  .grid-title {
+    font-size: 2.5rem;
   }
 }
 
 @media (max-width: 768px) {
+  .movie-grid-section {
+    padding: 3rem 0;
+  }
+  
+  .container {
+    padding: 0 2rem;
+  }
+  
+  .grid-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  
+  .grid-title {
+    font-size: 2.2rem;
+  }
+  
+  .grid-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .empty-state {
+    padding: 6rem 1.5rem;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
   .movie-grid-section {
     padding: 2rem 0;
   }
@@ -101,55 +180,29 @@
     padding: 0 1.5rem;
   }
   
-  .grid-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  
   .grid-title {
-    font-size: 1.75rem;
-  }
-  
-  .movie-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.25rem;
-  }
-  
-  .empty-state {
-    padding: 3rem 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .movie-grid-section {
-    padding: 1.5rem 0;
-  }
-  
-  .container {
-    padding: 0 1rem;
-  }
-  
-  .grid-title {
-    font-size: 1.5rem;
+    font-size: 2rem;
   }
   
   .movie-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
   }
   
   .movie-count {
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
   }
   
   .empty-state {
-    padding: 2rem 1rem;
+    padding: 4rem 1rem;
   }
   
   .empty-state h3 {
-    font-size: 1.3rem;
+    font-size: 1.6rem;
+  }
+  
+  .empty-state p {
+    font-size: 1rem;
   }
 }
