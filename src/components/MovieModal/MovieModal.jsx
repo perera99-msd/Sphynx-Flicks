@@ -1,4 +1,4 @@
-// src/components/MovieModal/MovieModal.jsx - PREMIUM PROFESSIONAL (REVISED)
+// src/components/MovieModal/MovieModal.jsx - PREMIUM PROFESSIONAL (REVISED V2)
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -93,7 +93,6 @@ const MovieModal = ({
                   src={posterImg} 
                   alt={movie.title}
                   className="modal-poster"
-                  layoutId={`movie-poster-${movie.id}`} // For potential shared layout animations
                   initial={{ opacity: 0, x: -50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
@@ -203,11 +202,11 @@ const MovieModal = ({
               )}
 
               {activeTab === 'cast' && movie.cast && (
-                <motion.div className="cast-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  {movie.cast.slice(0, 12).map(person => (
-                    <div key={person.id} className="cast-member">
+                <motion.div className="cast-list" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  {movie.cast.slice(0, 14).map(person => (
+                    <div key={person.cast_id} className="cast-member">
                       <img 
-                        src={person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : '/api/placeholder/200/300?text=No+Photo'}
+                        src={person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : '/api/placeholder/200/200?text=N/A'}
                         alt={person.name}
                         className="cast-photo"
                       />
