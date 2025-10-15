@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiFilter, 
   FiX, 
-  FiChevronDown, 
-  FiSliders,
+  FiChevronDown,
   FiCheck,
   FiStar,
   FiCalendar,
@@ -16,15 +15,14 @@ import './FilterSection.css';
 const FilterSection = ({ filters, onFilterChange, onClearFilters, genres }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 50 }, (_, i) => currentYear - i);
+  const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
   
   const ratingOptions = [
-    { value: '', label: 'Any Rating', icon: FiStar },
-    { value: '9', label: '9+ Excellent', color: '#10b981' },
-    { value: '8', label: '8+ Great', color: '#3b82f6' },
-    { value: '7', label: '7+ Good', color: '#8b5cf6' },
-    { value: '6', label: '6+ Average', color: '#f59e0b' },
-    { value: '5', label: '5+ Fair', color: '#ef4444' }
+    { value: '', label: 'Any Rating' },
+    { value: '9', label: '9+ Excellent' },
+    { value: '8', label: '8+ Great' },
+    { value: '7', label: '7+ Good' },
+    { value: '6', label: '6+ Average' }
   ];
 
   const handleFilterChange = (key, value) => {
@@ -46,49 +44,27 @@ const FilterSection = ({ filters, onFilterChange, onClearFilters, genres }) => {
   };
 
   return (
-    <motion.section 
-      className="filter-section"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-    >
+    <section className="filter-section">
       <div className="filter-container">
-        {/* Header with Expand/Collapse */}
-        <motion.div 
-          className="filter-header"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <div className="header-left">
-            <div className="header-icon">
-              <FiSliders />
-            </div>
-            <div className="header-content">
-              <h3>Advanced Filters</h3>
-              <p>Refine your movie discovery</p>
-            </div>
+        {/* Header */}
+        <div className="filter-header" onClick={() => setIsExpanded(!isExpanded)}>
+          <div className="header-content">
+            <h3>Filters</h3>
+            <p>Refine your results</p>
           </div>
           
           <div className="header-right">
             {hasActiveFilters && (
-              <motion.div 
-                className="active-filters-badge"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 500, damping: 15 }}
-              >
+              <span className="active-filters-badge">
                 {getActiveFilterCount()} active
-              </motion.div>
+              </span>
             )}
             
-            <button 
-              className={`expand-btn ${isExpanded ? 'expanded' : ''}`}
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
+            <button className={`expand-btn ${isExpanded ? 'expanded' : ''}`}>
               <FiChevronDown />
             </button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Filter Controls */}
         <AnimatePresence>
@@ -98,53 +74,38 @@ const FilterSection = ({ filters, onFilterChange, onClearFilters, genres }) => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+              transition={{ duration: 0.3 }}
             >
               <div className="filter-grid">
                 {/* Genre Filter */}
-                <motion.div 
-                  className="filter-group"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <div className="filter-label">
-                    <FiTag className="label-icon" />
-                    <span>Genre</span>
-                  </div>
-                  <div className="genre-grid">
-                    <button
-                      className={`genre-option ${!filters.genre ? 'active' : ''}`}
-                      onClick={() => handleFilterChange('genre', '')}
+                <div className="filter-group">
+                  <label className="filter-label">
+                    <FiTag />
+                    Genre
+                  </label>
+                  <div className="filter-select-wrapper">
+                    <select 
+                      value={filters.genre} 
+                      onChange={(e) => handleFilterChange('genre', e.target.value)}
+                      className="filter-select"
                     >
-                      <FiCheck className="check-icon" />
-                      All Genres
-                    </button>
-                    {genres.map(genre => (
-                      <button
-                        key={genre.id}
-                        className={`genre-option ${filters.genre === genre.id.toString() ? 'active' : ''}`}
-                        onClick={() => handleFilterChange('genre', genre.id.toString())}
-                      >
-                        <FiCheck className="check-icon" />
-                        {genre.name}
-                      </button>
-                    ))}
+                      <option value="">All Genres</option>
+                      {genres.map(genre => (
+                        <option key={genre.id} value={genre.id}>
+                          {genre.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Year Filter */}
-                <motion.div 
-                  className="filter-group"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <div className="filter-label">
-                    <FiCalendar className="label-icon" />
-                    <span>Release Year</span>
-                  </div>
-                  <div className="year-selector">
+                <div className="filter-group">
+                  <label className="filter-label">
+                    <FiCalendar />
+                    Release Year
+                  </label>
+                  <div className="filter-select-wrapper">
                     <select 
                       value={filters.year} 
                       onChange={(e) => handleFilterChange('year', e.target.value)}
@@ -157,129 +118,78 @@ const FilterSection = ({ filters, onFilterChange, onClearFilters, genres }) => {
                         </option>
                       ))}
                     </select>
-                    <FiChevronDown className="select-arrow" />
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Rating Filter */}
-                <motion.div 
-                  className="filter-group"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <div className="filter-label">
-                    <FiStar className="label-icon" />
-                    <span>Minimum Rating</span>
+                <div className="filter-group">
+                  <label className="filter-label">
+                    <FiStar />
+                    Minimum Rating
+                  </label>
+                  <div className="filter-select-wrapper">
+                    <select 
+                      value={filters.rating} 
+                      onChange={(e) => handleFilterChange('rating', e.target.value)}
+                      className="filter-select"
+                    >
+                      {ratingOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="rating-options">
-                    {ratingOptions.map((option, index) => {
-                      const IconComponent = option.icon;
-                      return (
-                        <button
-                          key={option.value}
-                          className={`rating-option ${filters.rating === option.value ? 'active' : ''}`}
-                          onClick={() => handleFilterChange('rating', option.value)}
-                          style={{ '--rating-color': option.color }}
-                        >
-                          <IconComponent className="rating-icon" />
-                          <span>{option.label}</span>
-                          {filters.rating === option.value && (
-                            <motion.div 
-                              className="active-indicator"
-                              layoutId="activeRating"
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                            />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
+                </div>
               </div>
 
               {/* Action Buttons */}
-              <motion.div 
-                className="filter-actions"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
+              <div className="filter-actions">
                 {hasActiveFilters && (
                   <button className="clear-filters-btn" onClick={handleClearFilters}>
                     <FiX />
-                    Clear All Filters
+                    Clear Filters
                   </button>
                 )}
                 
-                <motion.button 
-                  className="apply-filters-btn"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsExpanded(false)}
-                >
-                  <FiFilter />
+                <button className="apply-filters-btn" onClick={() => setIsExpanded(false)}>
                   Apply Filters
-                </motion.button>
-              </motion.div>
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Active Filters Bar */}
+        {/* Active Filters */}
         {hasActiveFilters && (
-          <motion.div 
-            className="active-filters-bar"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="active-filters-label">
-              <span>Active Filters:</span>
-            </div>
+          <div className="active-filters-bar">
+            <span className="active-filters-label">Active:</span>
             <div className="active-filters-list">
               {filters.genre && (
-                <motion.span 
-                  className="active-filter-tag"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                >
+                <span className="active-filter-tag">
                   {genres.find(g => g.id.toString() === filters.genre)?.name}
                   <button onClick={() => handleFilterChange('genre', '')}>×</button>
-                </motion.span>
+                </span>
               )}
               
               {filters.year && (
-                <motion.span 
-                  className="active-filter-tag"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 15, delay: 0.1 }}
-                >
+                <span className="active-filter-tag">
                   {filters.year}
                   <button onClick={() => handleFilterChange('year', '')}>×</button>
-                </motion.span>
+                </span>
               )}
               
               {filters.rating && (
-                <motion.span 
-                  className="active-filter-tag"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 15, delay: 0.2 }}
-                >
+                <span className="active-filter-tag">
                   {ratingOptions.find(r => r.value === filters.rating)?.label}
                   <button onClick={() => handleFilterChange('rating', '')}>×</button>
-                </motion.span>
+                </span>
               )}
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
-    </motion.section>
+    </section>
   );
 };
 

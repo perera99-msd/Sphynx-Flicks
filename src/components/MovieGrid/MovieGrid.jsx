@@ -10,9 +10,7 @@ const MovieGrid = ({
   onToggleFavorite, 
   favorites, 
   user, 
-  activeView, 
-  genres, 
-  getGenreNames 
+  activeView 
 }) => {
   const isFavorite = (movie) => favorites.some(fav => fav.id === movie.id);
 
@@ -21,21 +19,30 @@ const MovieGrid = ({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.08
+        staggerChildren: 0.1
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.9 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      scale: 1,
       transition: {
-        duration: 0.5,
-        ease: "easeOut"
+        duration: 0.4
       }
+    }
+  };
+
+  const getGridTitle = () => {
+    switch (activeView) {
+      case 'favorites':
+        return `Your Favorites (${movies.length})`;
+      case 'profile':
+        return 'Recently Watched';
+      default:
+        return 'Discover Movies';
     }
   };
 
@@ -44,41 +51,42 @@ const MovieGrid = ({
       <div className="container">
         {movies.length > 0 && (
           <div className="grid-header">
-            <h2 className="grid-title">
-              {activeView === 'discover' && 'Discover Movies'}
-              {activeView === 'favorites' && `Your Favorites (${movies.length})`}
-              {activeView === 'profile' && 'Recently Watched'}
-            </h2>
+            <h2 className="grid-title">{getGridTitle()}</h2>
             <div className="grid-stats">
-              <span className="movie-count">{movies.length} movies</span>
+              <span className="movie-count">{movies.length} {movies.length === 1 ? 'movie' : 'movies'}</span>
             </div>
           </div>
         )}
         
-        <motion.div 
-          className="movie-grid"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {movies.map((movie, index) => (
-            <motion.div
-              key={`${movie.id}-${index}-${activeView}`}
-              variants={itemVariants}
-              layout
-            >
-              <MovieCard
-                movie={movie}
-                onClick={onMovieClick}
-                onToggleFavorite={onToggleFavorite}
-                isFavorite={isFavorite(movie)}
-                user={user}
-                genres={genres}
-                getGenreNames={getGenreNames}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
+        {movies.length > 0 ? (
+          <motion.div 
+            className="movie-grid"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {movies.map((movie) => (
+              <motion.div
+                key={`${movie.id}-${activeView}`}
+                variants={itemVariants}
+                layout
+              >
+                <MovieCard
+                  movie={movie}
+                  onClick={onMovieClick}
+                  onToggleFavorite={onToggleFavorite}
+                  isFavorite={isFavorite(movie)}
+                  user={user}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <div className="empty-state">
+            <h3>No movies found</h3>
+            <p>Try adjusting your search or filters to find what you're looking for.</p>
+          </div>
+        )}
       </div>
     </section>
   );
