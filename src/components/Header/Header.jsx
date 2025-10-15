@@ -1,4 +1,4 @@
-// src/components/Header/Header.jsx - PREMIUM REDESIGN
+// src/components/Header/Header.jsx - PROFESSIONAL REDESIGN
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -6,11 +6,9 @@ import {
   FiUser, 
   FiHeart, 
   FiLogOut, 
-  FiGrid, 
   FiBookmark, 
   FiMenu, 
   FiX,
-  FiStar,
   FiHome
 } from 'react-icons/fi';
 import './Header.css';
@@ -110,7 +108,16 @@ const Header = ({
               whileTap={{ scale: 0.95 }}
             >
               <div className="logo" onClick={() => handleViewChange('discover')}>
-                <span className="logo-icon">🎬</span>
+                <img 
+                  src="logo.jpg"
+                  alt="Sphynx Flicks Logo" 
+                  className="logo-image"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+                <span style={{display: 'none'}}>🎬</span>
                 SPHYNX FLICKS
               </div>
             </motion.div>
@@ -119,7 +126,7 @@ const Header = ({
 
           {/* Right Section - Search & User */}
           <div className="header-right">
-            {/* Premium Search Bar */}
+            {/* Professional Search Bar */}
             <motion.div 
               className={`header-search ${searchFocused ? 'focused' : ''}`}
               initial={false}
@@ -259,7 +266,16 @@ const Header = ({
             >
               <div className="mobile-menu-header">
                 <div className="mobile-logo">
-                  <span className="logo-icon">🎬</span>
+                  <img 
+                    src="logo.jpg" 
+                    alt="Sphynx Flicks Logo" 
+                    className="mobile-logo-image"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <span style={{display: 'none'}}>🎬</span>
                   SPHYNX FLICKS
                 </div>
                 <motion.button 

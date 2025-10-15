@@ -1,4 +1,4 @@
-// src/components/Footer/Footer.jsx - PREMIUM COMPACT DESIGN
+// src/components/Footer/Footer.jsx - PROFESSIONAL COMPACT DESIGN
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FiHeart, FiGithub, FiLinkedin, FiMail } from 'react-icons/fi';
@@ -32,12 +32,21 @@ const Footer = () => {
         {/* Left Side: Logo and Copyright */}
         <div className="footer-left">
           <motion.div 
-            className="footer-logo-simple"
+            className="footer-logo"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <span className="logo-icon">🎬</span>
+            <img 
+              src="logo.jpg" 
+              alt="Sphynx Flicks Logo" 
+              className="footer-logo-image"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <span style={{display: 'none'}}>🎬</span>
             <span>SPHYNX FLICKS</span>
           </motion.div>
           <div className="footer-copyright">
@@ -50,7 +59,7 @@ const Footer = () => {
               >
                 <FiHeart />
               </motion.span>
-              by <a href="https://github.com/your-username" target="_blank" rel="noopener noreferrer" className="developer-name">M S D PERERA</a>
+              by <a href="https://github.com/msdperera" target="_blank" rel="noopener noreferrer" className="developer-name">M S D PERERA</a>
             </p>
           </div>
         </div>
