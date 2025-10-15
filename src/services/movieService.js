@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Use your actual backend URL (replace with your deployed worker URL)
-const API_BASE_URL = 'https://movie-app-backend.your-subdomain.workers.dev/api';
+const API_BASE_URL = 'https://movie-app-backend.msdperera99.workers.dev';
 
 // For local development, you might use:
 // const API_BASE_URL = 'http://localhost:8787/api';

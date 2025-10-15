@@ -1,13 +1,35 @@
-// src/index.js - Simplified version without bcryptjs
-
+// src/index.js - Fixed CORS version
 // CORS headers
 const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': 'https://sphynx-flicks.pages.dev',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Max-Age': '86400',
 };
 
-// Simple JWT implementation (basic)
+// Response helpers with CORS
+const json = (data, status = 200) => {
+    return new Response(JSON.stringify(data), {
+        status,
+        headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+        },
+    });
+};
+
+const error = (status, message) => {
+    return new Response(JSON.stringify({ error: message }), {
+        status,
+        headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+        },
+    });
+};
+
+// Simple JWT implementation
 const base64UrlEncode = (str) => {
     return btoa(str)
         .replace(/\+/g, '-')
@@ -34,7 +56,6 @@ const generateToken = (user, secret) => {
     const headerEncoded = base64UrlEncode(JSON.stringify(header));
     const payloadEncoded = base64UrlEncode(JSON.stringify(payload));
     
-    // Simple signature (in production, use proper HMAC)
     const signature = base64UrlEncode(secret + payloadEncoded);
     
     return `${headerEncoded}.${payloadEncoded}.${signature}`;
@@ -44,7 +65,6 @@ const verifyToken = (token, secret) => {
     try {
         const [headerEncoded, payloadEncoded, signature] = token.split('.');
         
-        // Verify signature
         const expectedSignature = base64UrlEncode(secret + payloadEncoded);
         if (signature !== expectedSignature) {
             return null;
@@ -52,7 +72,6 @@ const verifyToken = (token, secret) => {
 
         const payload = JSON.parse(base64UrlDecode(payloadEncoded));
         
-        // Check expiration
         if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
             return null;
         }
@@ -63,7 +82,7 @@ const verifyToken = (token, secret) => {
     }
 };
 
-// Simple password hashing (basic implementation)
+// Simple password hashing
 const simpleHash = async (password) => {
     const encoder = new TextEncoder();
     const data = encoder.encode(password + 'movie-app-salt');
@@ -75,27 +94,6 @@ const simpleHash = async (password) => {
 const comparePassword = async (password, hash) => {
     const newHash = await simpleHash(password);
     return newHash === hash;
-};
-
-// Response helpers
-const json = (data, status = 200) => {
-    return new Response(JSON.stringify(data), {
-        status,
-        headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
-        },
-    });
-};
-
-const error = (status, message) => {
-    return new Response(JSON.stringify({ error: message }), {
-        status,
-        headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
-        },
-    });
 };
 
 // TMDB API helper
@@ -280,8 +278,13 @@ export default {
                 }
 
                 if (path === '/api/genres' && method === 'GET') {
-                    const data = await tmdbFetch('/genre/movie/list', env);
-                    return json(data.genres);
+                    try {
+                        const data = await tmdbFetch('/genre/movie/list', env);
+                        return json(data.genres);
+                    } catch (err) {
+                        console.error('Error fetching genres:', err);
+                        return error(500, 'Failed to fetch genres');
+                    }
                 }
 
                 // Favorites routes (protected)
