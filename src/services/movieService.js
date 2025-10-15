@@ -1,7 +1,7 @@
 // src/services/movieService.js
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
+const API_BASE_URL = 'https://movie-app-backend.msdperera99.workers.dev/';
 
 const convertGenreIdsToNames = (movies, genres) => {
   return movies.map(movie => ({

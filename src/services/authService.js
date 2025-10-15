@@ -2,8 +2,7 @@
 import axios from 'axios';
 
 // Replace with your actual worker URL after deployment
-const API_BASE_URL = 'https://backend.msdperera99.workers.dev/api';
-
+const API_BASE_URL = 'https://movie-app-backend.msdperera99.workers.dev/';
 // For local testing during development
 // const API_BASE_URL = 'http://localhost:8787/api';
 
