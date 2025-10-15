@@ -104,21 +104,17 @@ const Header = ({
           <div className="header-left">
             <motion.div 
               className="logo-container"
+              onClick={() => handleViewChange('discover')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="logo" onClick={() => handleViewChange('discover')}>
+              <div className="logo">
                 <img 
-                  src="logo.jpg"
+                  src="/logo.jpg"
                   alt="Sphynx Flicks Logo" 
                   className="logo-image"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'block';
-                  }}
                 />
-                <span style={{display: 'none'}}>🎬</span>
-                SPHYNX FLICKS
+                <span>SPHYNX FLICKS</span>
               </div>
             </motion.div>
             {renderNavLinks()}
@@ -267,16 +263,11 @@ const Header = ({
               <div className="mobile-menu-header">
                 <div className="mobile-logo">
                   <img 
-                    src="logo.jpg" 
+                    src="/logo.jpg" 
                     alt="Sphynx Flicks Logo" 
                     className="mobile-logo-image"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'block';
-                    }}
                   />
-                  <span style={{display: 'none'}}>🎬</span>
-                  SPHYNX FLICKS
+                  <span>SPHYNX FLICKS</span>
                 </div>
                 <motion.button 
                   className="mobile-menu-close"

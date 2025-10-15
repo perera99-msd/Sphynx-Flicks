@@ -38,15 +38,10 @@ const Footer = () => {
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
             <img 
-              src="logo.jpg" 
+              src="/logo.jpg" 
               alt="Sphynx Flicks Logo" 
               className="footer-logo-image"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
             />
-            <span style={{display: 'none'}}>🎬</span>
             <span>SPHYNX FLICKS</span>
           </motion.div>
           <div className="footer-copyright">
