@@ -1,7 +1,18 @@
-// src/components/Header/Header.jsx - NEW PREMIUM DESIGN
+// src/components/Header/Header.jsx - PREMIUM REDESIGN
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSearch, FiUser, FiHeart, FiLogOut, FiGrid, FiBookmark, FiMenu, FiX } from 'react-icons/fi';
+import { 
+  FiSearch, 
+  FiUser, 
+  FiHeart, 
+  FiLogOut, 
+  FiGrid, 
+  FiBookmark, 
+  FiMenu, 
+  FiX,
+  FiStar,
+  FiHome
+} from 'react-icons/fi';
 import './Header.css';
 
 const Header = ({
@@ -17,6 +28,7 @@ const Header = ({
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const profileRef = useRef(null);
 
   // Handle header scroll effect
@@ -50,26 +62,33 @@ const Header = ({
   }
 
   const navItems = [
-    { key: 'discover', label: 'Discover', icon: <FiGrid/> },
-    ...(user ? [{ key: 'favorites', label: 'My List', icon: <FiBookmark/> }] : [])
+    { key: 'discover', label: 'Discover', icon: <FiHome /> },
+    ...(user ? [{ key: 'favorites', label: 'My List', icon: <FiBookmark/> }] : []),
+    ...(user ? [{ key: 'profile', label: 'Profile', icon: <FiUser/> }] : [])
   ];
 
   const renderNavLinks = (isMobile = false) => (
     <nav className={isMobile ? "nav-mobile" : "nav-desktop"}>
       {navItems.map((item) => (
-        <button
+        <motion.button
           key={item.key}
           className={`nav-link ${activeView === item.key ? 'active' : ''}`}
           onClick={() => handleViewChange(item.key)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          {isMobile && item.icon} <span>{item.label}</span>
-          {activeView === item.key && (
+          {isMobile && <span className="nav-icon">{item.icon}</span>}
+          <span className="nav-label">{item.label}</span>
+          {activeView === item.key && !isMobile && (
             <motion.div
               className="active-indicator"
-              layoutId={isMobile ? "activeMobileIndicator" : "activeDesktopIndicator"}
+              layoutId="activeIndicator"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
             />
           )}
-        </button>
+        </motion.button>
       ))}
     </nav>
   );
@@ -78,35 +97,75 @@ const Header = ({
     <>
       <motion.header
         className={`header ${isScrolled ? 'scrolled' : ''}`}
-        initial={{ y: -80, opacity: 0 }}
+        initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <div className="header-content">
+          {/* Left Section - Logo & Navigation */}
           <div className="header-left">
-            <div className="logo" onClick={() => handleViewChange('discover')}>
-              SPHYNX FLICKS
-            </div>
+            <motion.div 
+              className="logo-container"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="logo" onClick={() => handleViewChange('discover')}>
+                <span className="logo-icon">🎬</span>
+                SPHYNX FLICKS
+              </div>
+            </motion.div>
             {renderNavLinks()}
           </div>
 
+          {/* Right Section - Search & User */}
           <div className="header-right">
-            <div className="header-search">
+            {/* Premium Search Bar */}
+            <motion.div 
+              className={`header-search ${searchFocused ? 'focused' : ''}`}
+              initial={false}
+              animate={{ width: searchFocused ? 320 : 280 }}
+            >
               <FiSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search movies..."
                 className="search-input"
                 value={searchQuery}
                 onChange={(e) => onSearch(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
               />
-            </div>
+              {searchQuery && (
+                <motion.div 
+                  className="search-active-indicator"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                />
+              )}
+            </motion.div>
 
+            {/* User Section */}
             {user ? (
               <div className="profile-menu" ref={profileRef}>
-                <button className="profile-trigger" onClick={() => setIsProfileOpen(p => !p)}>
-                  <div className="user-avatar">{user.username.charAt(0).toUpperCase()}</div>
-                </button>
+                <motion.button 
+                  className="profile-trigger"
+                  onClick={() => setIsProfileOpen(p => !p)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className="user-avatar">
+                    {user.username.charAt(0).toUpperCase()}
+                    {favoritesCount > 0 && (
+                      <motion.span 
+                        className="favorite-badge"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                      >
+                        {favoritesCount}
+                      </motion.span>
+                    )}
+                  </div>
+                </motion.button>
 
                 <AnimatePresence>
                   {isProfileOpen && (
@@ -118,12 +177,39 @@ const Header = ({
                       transition={{ duration: 0.2, ease: "easeOut" }}
                     >
                       <div className="dropdown-header">
-                        <span className="user-name">{user.username}</span>
+                        <div className="user-avatar-small">
+                          {user.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="user-info">
+                          <span className="user-name">{user.username}</span>
+                          <span className="user-email">{user.email}</span>
+                        </div>
                       </div>
-                      <button onClick={() => handleViewChange('profile')}><FiUser/> Profile</button>
-                      <button onClick={() => handleViewChange('favorites')}><FiHeart/> My List ({favoritesCount})</button>
+                      
+                      <div className="dropdown-stats">
+                        <div className="stat-item">
+                          <FiHeart className="stat-icon" />
+                          <span>{favoritesCount} Favorites</span>
+                        </div>
+                      </div>
+
                       <div className="dropdown-divider"></div>
-                      <button className="logout-btn" onClick={handleLogout}><FiLogOut/> Sign Out</button>
+                      
+                      <button onClick={() => handleViewChange('profile')}>
+                        <FiUser/>
+                        <span>Profile</span>
+                      </button>
+                      <button onClick={() => handleViewChange('favorites')}>
+                        <FiBookmark/>
+                        <span>My List</span>
+                      </button>
+                      
+                      <div className="dropdown-divider"></div>
+                      
+                      <button className="logout-btn" onClick={handleLogout}>
+                        <FiLogOut/>
+                        <span>Sign Out</span>
+                      </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -132,15 +218,23 @@ const Header = ({
               <motion.button
                 className="auth-button"
                 onClick={onAuthClick}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(59, 130, 246, 0.4)" }}
                 whileTap={{ scale: 0.95 }}
               >
+                <FiUser className="auth-icon" />
                 Sign In
               </motion.button>
             )}
-             <button className="mobile-menu-toggle" onClick={() => setIsMobileMenuOpen(true)}>
-                <FiMenu />
-             </button>
+            
+            {/* Mobile Menu Toggle */}
+            <motion.button 
+              className="mobile-menu-toggle"
+              onClick={() => setIsMobileMenuOpen(true)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <FiMenu />
+            </motion.button>
           </div>
         </div>
       </motion.header>
@@ -153,18 +247,46 @@ const Header = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
           >
             <motion.div 
-                className="mobile-menu-panel"
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="mobile-menu-panel"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
             >
-                <button className="mobile-menu-close" onClick={() => setIsMobileMenuOpen(false)}>
-                    <FiX />
-                </button>
-                {renderNavLinks(true)}
+              <div className="mobile-menu-header">
+                <div className="mobile-logo">
+                  <span className="logo-icon">🎬</span>
+                  SPHYNX FLICKS
+                </div>
+                <motion.button 
+                  className="mobile-menu-close"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <FiX />
+                </motion.button>
+              </div>
+
+              {renderNavLinks(true)}
+
+              {!user && (
+                <div className="mobile-auth-section">
+                  <motion.button
+                    className="mobile-auth-button"
+                    onClick={onAuthClick}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <FiUser className="auth-icon" />
+                    Sign In
+                  </motion.button>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

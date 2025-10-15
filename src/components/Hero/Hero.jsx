@@ -12,18 +12,25 @@ const Hero = ({ movies = [], onMovieClick, isLoading, user, onWatchTrailer }) =>
   const [swiperInstance, setSwiperInstance] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const handleWatchTrailer = (movie, event) => {
+  const handleWatchTrailer = async (movie, event) => {
     event.stopPropagation();
     
-    // Direct YouTube trailer logic
-    if (movie.trailer && movie.trailer.key) {
-      window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
-      // Record watch history if user is logged in
-      if (user && onWatchTrailer) {
-        onWatchTrailer(movie.id);
+    try {
+      // Check if trailer data is already available
+      if (movie.trailer && movie.trailer.key) {
+        // Direct YouTube trailer logic
+        window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
+        // Record watch history if user is logged in
+        if (user && onWatchTrailer) {
+          onWatchTrailer(movie.id);
+        }
+      } else {
+        // If no trailer data, show message
+        alert('Trailer not available for this movie');
       }
-    } else {
-      alert('Trailer not available for this movie');
+    } catch (error) {
+      console.error('Error playing trailer:', error);
+      alert('Error playing trailer. Please try again.');
     }
   };
 

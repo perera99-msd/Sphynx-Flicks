@@ -9,6 +9,7 @@ import FilterSection from './components/FilterSection/FilterSection';
 import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
 import AuthModal from './components/AuthModal/AuthModal';
 import UserProfile from './components/UserProfile/UserProfile';
+import Footer from './components/Footer/Footer';
 import { MovieService } from './services/movieService';
 import { AuthService } from './services/authService';
 import { FavoritesService } from './services/favoritesService';
@@ -51,6 +52,20 @@ function App() {
     }
     return [];
   }, [genres]);
+
+  // Function to load trailer data for a movie
+  const loadTrailerData = async (movie) => {
+    try {
+      const trailerData = await MovieService.getMovieTrailer(movie.id);
+      return {
+        ...movie,
+        trailer: trailerData
+      };
+    } catch (error) {
+      console.error(`Error loading trailer for movie ${movie.id}:`, error);
+      return movie; // Return original movie if trailer fails
+    }
+  };
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -103,7 +118,12 @@ function App() {
       } else {
         setMovies(moviesData);
         if (page === 1 && !searchQuery && moviesData.length > 0) {
-          setHeroMovies(moviesData.slice(0, HERO_MOVIES_COUNT));
+          // Load trailer data for hero movies
+          const heroMoviesSlice = moviesData.slice(0, HERO_MOVIES_COUNT);
+          const heroMoviesWithTrailers = await Promise.all(
+            heroMoviesSlice.map(movie => loadTrailerData(movie))
+          );
+          setHeroMovies(heroMoviesWithTrailers);
         }
       }
       
@@ -247,7 +267,7 @@ function App() {
   };
 
   const handlePlayTrailer = (movie) => {
-    if (movie.trailer) {
+    if (movie.trailer && movie.trailer.key) {
       window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
       if (user) {
         recordWatch(movie.id);
@@ -341,6 +361,9 @@ function App() {
           </AnimatePresence>
         )}
       </main>
+
+      {/* Footer Component */}
+      <Footer />
 
       <AnimatePresence>
         {selectedMovie && (
