@@ -62,16 +62,6 @@ export const MovieService = {
     }
   },
 
-  async getMovieTrailer(movieId) {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/movies/${movieId}/trailer`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching movie trailer:', error);
-      return null;
-    }
-  },
-
   async getTrendingMovies() {
     try {
       const response = await axios.get(`${API_BASE_URL}/movies/trending`);
