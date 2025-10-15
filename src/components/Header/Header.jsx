@@ -1,7 +1,7 @@
-// src/components/Header/Header.jsx - PREMIUM PROFESSIONAL (ANIMATED REVISION)
+// src/components/Header/Header.jsx - PREMIUM PROFESSIONAL (ANIMATED REVISION 2)
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSearch, FiMenu, FiX, FiUser, FiHeart, FiLogOut, FiGrid, FiBookmark, FiChevronDown } from 'react-icons/fi';
+import { FiSearch, FiMenu, FiX, FiUser, FiHeart, FiLogOut, FiGrid, FiBookmark, FiBell, FiChevronDown } from 'react-icons/fi';
 import './Header.css';
 
 const Header = ({
@@ -20,14 +20,12 @@ const Header = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
-  // Scroll detection effect
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Click outside to close profile dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
@@ -37,7 +35,6 @@ const Header = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [profileRef]);
-
 
   const handleViewChange = (view) => {
     onViewChange(view);
@@ -55,15 +52,11 @@ const Header = ({
     { key: 'discover', label: 'Discover', icon: <FiGrid/> },
     ...(user ? [{ key: 'favorites', label: 'My List', icon: <FiBookmark/> }] : [])
   ];
-
+  
   const mobileMenuVariant = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.08 }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
   };
-
   const mobileNavItemVariant = {
     hidden: { opacity: 0, x: 20 },
     visible: { opacity: 1, x: 0 }
@@ -73,99 +66,88 @@ const Header = ({
     <>
       <motion.header
         className={`header ${isScrolled ? 'scrolled' : ''}`}
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ y: -80 }} animate={{ y: 0 }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="header-content">
           <div className="header-left">
-            <motion.div className="logo" onClick={() => handleViewChange('discover')}>SPHYNX</motion.div>
+            <h1 className="logo-gradient" onClick={() => handleViewChange('discover')}>SPHYNX FLICKS</h1>
+            <nav className="nav-main">
+              {navItems.map((item) => (
+                <button key={item.key} className={`nav-item ${activeView === item.key ? 'active' : ''}`} onClick={() => handleViewChange(item.key)}>
+                  <span>{item.label}</span>
+                  {activeView === item.key && <motion.div className="active-indicator" layoutId="activeNavIndicator" />}
+                </button>
+              ))}
+            </nav>
           </div>
 
-          <AnimatePresence>
-            {!isSearchOpen && (
-              <motion.nav 
-                className="nav-main"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {navItems.map((item) => (
-                  <button key={item.key} className={`nav-item ${activeView === item.key ? 'active' : ''}`} onClick={() => handleViewChange(item.key)}>
-                    {item.label}
-                    {activeView === item.key && <motion.div className="active-indicator" layoutId="activeNavIndicator" />}
-                  </button>
-                ))}
-              </motion.nav>
-            )}
-          </AnimatePresence>
-
           <div className="header-right">
-            <div className={`search-container ${isSearchOpen ? 'open' : ''}`}>
-              <motion.button className="search-toggle" onClick={() => setIsSearchOpen(!isSearchOpen)} layout>
-                <FiSearch />
-              </motion.button>
-              <AnimatePresence>
-                {isSearchOpen && (
-                  <motion.input 
-                    type="text" 
-                    placeholder="Search titles, genres..." 
-                    value={searchQuery} 
-                    onChange={(e) => onSearch(e.target.value)} 
-                    className="search-input"
-                    initial={{ width: 0, opacity: 0, paddingLeft: 0, paddingRight: 0 }}
-                    animate={{ width: 250, opacity: 1, paddingLeft: '1rem', paddingRight: '2.5rem' }}
-                    exit={{ width: 0, opacity: 0, paddingLeft: 0, paddingRight: 0 }}
-                    transition={{ duration: 0.4, ease: 'easeInOut' }}
-                    autoFocus
-                  />
-                )}
-              </AnimatePresence>
-            </div>
+            <button className="action-icon" onClick={() => setIsSearchOpen(true)} aria-label="Search"><FiSearch /></button>
+            <button className="action-icon" aria-label="Notifications"><FiBell /></button>
 
             {user ? (
-              <div className="user-actions">
-                <motion.div className="profile-menu" ref={profileRef}>
-                  <button className="profile-trigger" onClick={() => setIsProfileOpen(!isProfileOpen)}>
-                    <div className="user-avatar">{user.username.charAt(0).toUpperCase()}</div>
-                    <FiChevronDown className={`profile-chevron ${isProfileOpen ? 'open' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {isProfileOpen && (
-                      <motion.div 
-                        className="profile-dropdown"
-                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      >
-                        <div className="dropdown-user-info">
-                            <div className="user-avatar large">{user.username.charAt(0).toUpperCase()}</div>
-                            <span className="user-name">{user.username}</span>
-                        </div>
-                        <button onClick={() => handleViewChange('profile')}><FiUser/> Profile</button>
-                        <button onClick={() => handleViewChange('favorites')}><FiHeart/> My List ({favoritesCount})</button>
-                        <button className="logout-btn" onClick={handleLogout}><FiLogOut/> Sign Out</button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
+              <div className="profile-menu" ref={profileRef}>
+                <button className="profile-trigger" onClick={() => setIsProfileOpen(!isProfileOpen)}>
+                  <div className="user-avatar">{user.username.charAt(0).toUpperCase()}</div>
+                </button>
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <motion.div 
+                      className="profile-dropdown"
+                      initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                    >
+                      <div className="dropdown-user-info">
+                        <div className="user-avatar large">{user.username.charAt(0).toUpperCase()}</div>
+                        <span className="user-name">{user.username}</span>
+                      </div>
+                      <button onClick={() => handleViewChange('profile')}><FiUser/> Profile</button>
+                      <button onClick={() => handleViewChange('favorites')}><FiHeart/> My List ({favoritesCount})</button>
+                      <button className="logout-btn" onClick={handleLogout}><FiLogOut/> Sign Out</button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               <motion.button className="auth-btn" onClick={onAuthClick}>Sign In</motion.button>
             )}
-
-            <motion.button className="mobile-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <FiX /> : <FiMenu />}
-            </motion.button>
+            <button className="mobile-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle Menu"><FiMenu /></button>
           </div>
         </div>
       </motion.header>
 
+      {/* Search Modal */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div 
+            className="search-overlay"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="search-modal"
+              initial={{ y: -100, scale: 0.9 }} animate={{ y: 0, scale: 1 }} exit={{ y: -100, scale: 0.9 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <FiSearch className="search-modal-icon" />
+              <input 
+                type="text"
+                placeholder="Search for movies, genres, and more..."
+                className="search-modal-input"
+                value={searchQuery}
+                onChange={(e) => onSearch(e.target.value)}
+                autoFocus
+              />
+              <button className="search-close-btn" onClick={() => setIsSearchOpen(false)}><FiX /></button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       {/* Mobile Menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div className="mobile-menu-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div
+             <motion.div
               className="mobile-menu"
               initial={{ x: "100%" }} animate={{ x: "0%" }} exit={{ x: "100%" }}
               transition={{ type: 'spring', damping: 40, stiffness: 400 }}
@@ -177,9 +159,9 @@ const Header = ({
                   </motion.button>
                 ))}
                 {user && (
-                    <motion.button variants={mobileNavItemVariant} className="mobile-nav-item" onClick={() => handleViewChange('profile')}>
-                        <FiUser/><span>Profile</span>
-                    </motion.button>
+                  <motion.button variants={mobileNavItemVariant} className="mobile-nav-item" onClick={() => handleViewChange('profile')}>
+                    <FiUser/><span>Profile</span>
+                  </motion.button>
                 )}
               </motion.div>
               <div className="mobile-actions">
