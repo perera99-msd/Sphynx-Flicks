@@ -53,7 +53,7 @@ function App() {
     return [];
   }, [genres]);
 
-  // Function to load trailer data for a movie
+  // Function to load trailer data for a movie - UPDATED
   const loadTrailerData = async (movie) => {
     try {
       const trailerData = await MovieService.getMovieTrailer(movie.id);
@@ -63,7 +63,22 @@ function App() {
       };
     } catch (error) {
       console.error(`Error loading trailer for movie ${movie.id}:`, error);
-      return movie; // Return original movie if trailer fails
+      // Return movie with empty trailer instead of original movie
+      return {
+        ...movie,
+        trailer: null
+      };
+    }
+  };
+
+  // Function to update hero movies with trailers - NEW
+  const updateHeroMoviesWithTrailers = async (moviesData) => {
+    if (!searchQuery && moviesData.length > 0) {
+      const heroMoviesSlice = moviesData.slice(0, HERO_MOVIES_COUNT);
+      const heroMoviesWithTrailers = await Promise.all(
+        heroMoviesSlice.map(movie => loadTrailerData(movie))
+      );
+      setHeroMovies(heroMoviesWithTrailers);
     }
   };
 
@@ -117,14 +132,8 @@ function App() {
         });
       } else {
         setMovies(moviesData);
-        if (page === 1 && !searchQuery && moviesData.length > 0) {
-          // Load trailer data for hero movies
-          const heroMoviesSlice = moviesData.slice(0, HERO_MOVIES_COUNT);
-          const heroMoviesWithTrailers = await Promise.all(
-            heroMoviesSlice.map(movie => loadTrailerData(movie))
-          );
-          setHeroMovies(heroMoviesWithTrailers);
-        }
+        // Always update hero movies when loading new movies (not appending)
+        await updateHeroMoviesWithTrailers(moviesData);
       }
       
       setHasMoreMovies(moviesData.length === MOVIES_PER_PAGE);
@@ -158,13 +167,17 @@ function App() {
   const handleMovieClick = useCallback(async (movie) => {
     try {
       const detailedMovie = await MovieService.getMovieDetails(movie.id);
-      setSelectedMovie(detailedMovie);
+      // Load trailer for the detailed movie as well
+      const movieWithTrailer = await loadTrailerData(detailedMovie);
+      setSelectedMovie(movieWithTrailer);
     } catch (error) {
       console.error(`Error loading details for movie ${movie.id}:`, error);
-      setSelectedMovie(movie);
+      // Try to load trailer for the basic movie data
+      const movieWithTrailer = await loadTrailerData(movie);
+      setSelectedMovie(movieWithTrailer);
     }
   }, []);
-
+  
   const handleCloseModal = useCallback(() => setSelectedMovie(null), []);
   
   const handleSearch = useCallback((query) => {
@@ -267,6 +280,9 @@ function App() {
   };
 
   const handlePlayTrailer = (movie) => {
+    console.log('Movie object in handlePlayTrailer:', movie);
+    console.log('Trailer data:', movie.trailer);
+    
     if (movie.trailer && movie.trailer.key) {
       window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
       if (user) {

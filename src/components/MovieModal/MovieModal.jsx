@@ -40,6 +40,8 @@ const MovieModal = ({
   const handlePlayTrailer = () => {
     if (movie.trailer) {
       onWatchTrailer(movie);
+    } else {
+      alert('Trailer not available for this movie');
     }
   };
 
