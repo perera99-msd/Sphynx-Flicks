@@ -45,8 +45,7 @@
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  object-fit: cover; /* Changed to cover for a fuller look */
-  /* This filter makes your logo white to match the theme */
+  object-fit: cover;
   filter: brightness(0) invert(1);
   transition: all 0.3s ease;
 }

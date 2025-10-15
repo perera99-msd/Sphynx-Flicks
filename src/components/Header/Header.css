@@ -39,14 +39,14 @@
 /* Professional Logo */
 .logo-container {
   cursor: pointer;
-  display: flex; /* Added for clean layout */
-  align-items: center; /* Added for clean layout */
+  display: flex;
+  align-items: center;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.85rem; /* Adjusted gap for better spacing */
+  gap: 0.85rem;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 1.6rem;
@@ -56,11 +56,10 @@
 }
 
 .logo-image {
-  width: 42px; /* Adjusted for better presence */
-  height: 42px; /* Adjusted for better presence */
+  width: 42px;
+  height: 42px;
   border-radius: 8px;
-  object-fit: cover; /* Changed to cover for a fuller look */
-  /* This filter makes your logo white to match the theme */
+  object-fit: cover;
   filter: brightness(0) invert(1);
   transition: all 0.3s ease;
 }

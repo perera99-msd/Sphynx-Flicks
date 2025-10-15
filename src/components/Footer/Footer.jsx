@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FiHeart, FiGithub, FiLinkedin, FiMail } from 'react-icons/fi';
 import './Footer.css';
+import logo from './logo.jpg'; // <-- Image is imported here
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -21,7 +22,7 @@ const Footer = () => {
   ];
 
   return (
-    <motion.footer 
+    <motion.footer
       className="footer"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
@@ -31,23 +32,23 @@ const Footer = () => {
       <div className="footer-content">
         {/* Left Side: Logo and Copyright */}
         <div className="footer-left">
-          <motion.div 
+          <motion.div
             className="footer-logo"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <img 
-              src="logo.jpg" 
-              alt="Sphynx Flicks Logo" 
+            <img
+              src={logo}
+              alt="Sphynx Flicks Logo"
               className="footer-logo-image"
             />
             <span>SPHYNX FLICKS</span>
           </motion.div>
           <div className="footer-copyright">
             <p>
-              © {currentYear} SPHYNX FLICKS. Made with 
-              <motion.span 
+              © {currentYear} SPHYNX FLICKS. Made with
+              <motion.span
                 className="heart-icon"
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
@@ -63,9 +64,9 @@ const Footer = () => {
         <div className="footer-right">
           <nav className="footer-nav">
             {footerLinks.map((link) => (
-              <a 
-                key={link.name} 
-                href={link.href} 
+              <a
+                key={link.name}
+                href={link.href}
                 className="footer-link"
               >
                 {link.name}

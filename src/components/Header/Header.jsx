@@ -1,17 +1,18 @@
 // src/components/Header/Header.jsx - PROFESSIONAL REDESIGN
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FiSearch, 
-  FiUser, 
-  FiHeart, 
-  FiLogOut, 
-  FiBookmark, 
-  FiMenu, 
+import {
+  FiSearch,
+  FiUser,
+  FiHeart,
+  FiLogOut,
+  FiBookmark,
+  FiMenu,
   FiX,
   FiHome
 } from 'react-icons/fi';
 import './Header.css';
+import logo from './logo.jpg'; // <-- Image is imported here
 
 const Header = ({
   onSearch,
@@ -52,7 +53,7 @@ const Header = ({
     setIsProfileOpen(false);
     setIsMobileMenuOpen(false);
   };
-  
+
   const handleLogout = () => {
     onLogout();
     setIsProfileOpen(false);
@@ -102,16 +103,16 @@ const Header = ({
         <div className="header-content">
           {/* Left Section - Logo & Navigation */}
           <div className="header-left">
-            <motion.div 
+            <motion.div
               className="logo-container"
               onClick={() => handleViewChange('discover')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <div className="logo">
-                <img 
-                  src="logo.jpg"
-                  alt="Sphynx Flicks Logo" 
+                <img
+                  src={logo}
+                  alt="Sphynx Flicks Logo"
                   className="logo-image"
                 />
                 <span>SPHYNX FLICKS</span>
@@ -123,7 +124,7 @@ const Header = ({
           {/* Right Section - Search & User */}
           <div className="header-right">
             {/* Professional Search Bar */}
-            <motion.div 
+            <motion.div
               className={`header-search ${searchFocused ? 'focused' : ''}`}
               initial={false}
               animate={{ width: searchFocused ? 320 : 280 }}
@@ -139,7 +140,7 @@ const Header = ({
                 onBlur={() => setSearchFocused(false)}
               />
               {searchQuery && (
-                <motion.div 
+                <motion.div
                   className="search-active-indicator"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -150,7 +151,7 @@ const Header = ({
             {/* User Section */}
             {user ? (
               <div className="profile-menu" ref={profileRef}>
-                <motion.button 
+                <motion.button
                   className="profile-trigger"
                   onClick={() => setIsProfileOpen(p => !p)}
                   whileHover={{ scale: 1.05 }}
@@ -159,7 +160,7 @@ const Header = ({
                   <div className="user-avatar">
                     {user.username.charAt(0).toUpperCase()}
                     {favoritesCount > 0 && (
-                      <motion.span 
+                      <motion.span
                         className="favorite-badge"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -188,7 +189,7 @@ const Header = ({
                           <span className="user-email">{user.email}</span>
                         </div>
                       </div>
-                      
+
                       <div className="dropdown-stats">
                         <div className="stat-item">
                           <FiHeart className="stat-icon" />
@@ -197,7 +198,7 @@ const Header = ({
                       </div>
 
                       <div className="dropdown-divider"></div>
-                      
+
                       <button onClick={() => handleViewChange('profile')}>
                         <FiUser/>
                         <span>Profile</span>
@@ -206,9 +207,9 @@ const Header = ({
                         <FiBookmark/>
                         <span>My List</span>
                       </button>
-                      
+
                       <div className="dropdown-divider"></div>
-                      
+
                       <button className="logout-btn" onClick={handleLogout}>
                         <FiLogOut/>
                         <span>Sign Out</span>
@@ -228,9 +229,9 @@ const Header = ({
                 Sign In
               </motion.button>
             )}
-            
+
             {/* Mobile Menu Toggle */}
-            <motion.button 
+            <motion.button
               className="mobile-menu-toggle"
               onClick={() => setIsMobileMenuOpen(true)}
               whileHover={{ scale: 1.1 }}
@@ -245,14 +246,14 @@ const Header = ({
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div 
+          <motion.div
             className="mobile-menu-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <motion.div 
+            <motion.div
               className="mobile-menu-panel"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -262,14 +263,14 @@ const Header = ({
             >
               <div className="mobile-menu-header">
                 <div className="mobile-logo">
-                  <img 
-                    src="logo.jpg" 
-                    alt="Sphynx Flicks Logo" 
+                  <img
+                    src={logo}
+                    alt="Sphynx Flicks Logo"
                     className="mobile-logo-image"
                   />
                   <span>SPHYNX FLICKS</span>
                 </div>
-                <motion.button 
+                <motion.button
                   className="mobile-menu-close"
                   onClick={() => setIsMobileMenuOpen(false)}
                   whileHover={{ scale: 1.1 }}
