@@ -1,4 +1,4 @@
-// src/App.jsx - FINAL & COMPLETE
+// src/App.jsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header/Header';
@@ -16,18 +16,6 @@ import './App.css';
 
 const HERO_MOVIES_COUNT = 5;
 const MOVIES_PER_PAGE = 20;
-
-// Custom hook to debounce search input for performance
-const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-};
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -48,8 +36,6 @@ function App() {
   const [genres, setGenres] = useState([]);
   const [error, setError] = useState(null);
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
-
   const getGenreNames = useCallback((movie) => {
     if (movie.genre_names && movie.genre_names.length > 0) {
       return movie.genre_names;
@@ -60,27 +46,54 @@ function App() {
     if (movie.genre_ids && movie.genre_ids.length > 0 && genres.length > 0) {
       return movie.genre_ids.map(genreId => {
         const genre = genres.find(g => g.id === genreId);
-        return genre ? genre.name : null;
-      }).filter(Boolean);
+        return genre ? genre.name : 'Unknown';
+      }).filter(name => name !== 'Unknown');
     }
     return [];
   }, [genres]);
 
-  const loadMovies = useCallback(async (page = 1, append = false) => {
+  useEffect(() => {
+    const initializeApp = async () => {
+      setLoading(true);
+      try {
+        const genresData = await MovieService.getGenres();
+        setGenres(genresData);
+        await loadMovies(1);
+        
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const userData = await AuthService.verifyToken(token);
+            setUser(userData.user);
+            const localFavorites = await FavoritesService.getFavorites();
+            const localWatchHistory = await FavoritesService.getWatchHistory();
+            setFavorites(localFavorites);
+            setWatchHistory(localWatchHistory);
+          } catch (error) {
+            console.error('Token verification failed:', error);
+            handleLogout();
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing app:', error);
+        setError('Failed to load movies. Please check your connection.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    initializeApp();
+  }, []);
+
+  const loadMovies = async (page = 1, append = false) => {
     if (page === 1) setLoading(true);
     else setLoadingMore(true);
     setError(null);
 
-    const isSearchingOrFiltering = debouncedSearchQuery || filters.genre || filters.year || filters.rating;
-
     try {
-      // Assumes MovieService.getMovies can handle these parameters
-      const moviesData = await MovieService.getMovies({
-        query: debouncedSearchQuery,
-        filters,
-        page
-      });
-
+      const moviesData = searchQuery
+        ? await MovieService.searchMovies(searchQuery, page)
+        : await MovieService.getPopularMovies(page);
+      
       if (append) {
         setMovies(prev => {
           const existingIds = new Set(prev.map(movie => movie.id));
@@ -89,90 +102,65 @@ function App() {
         });
       } else {
         setMovies(moviesData);
-        if (page === 1 && !isSearchingOrFiltering && moviesData.length > 0) {
+        if (page === 1 && !searchQuery && moviesData.length > 0) {
           setHeroMovies(moviesData.slice(0, HERO_MOVIES_COUNT));
         }
       }
       
       setHasMoreMovies(moviesData.length === MOVIES_PER_PAGE);
       setCurrentPage(page);
-
-    } catch (err) {
-      console.error('Error loading movies:', err);
+    } catch (error) {
+      console.error('Error loading movies:', error);
       setError('Failed to load movies. Please try again.');
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [debouncedSearchQuery, filters]);
-
-  // Effect for initial application setup
-  useEffect(() => {
-    const initializeApp = async () => {
-      setLoading(true);
-      try {
-        const genresData = await MovieService.getGenres();
-        setGenres(genresData);
-        
-        const token = localStorage.getItem('token');
-        if (token) {
-          const userData = await AuthService.verifyToken(token);
-          setUser(userData.user);
-          setFavorites(await FavoritesService.getFavorites());
-          setWatchHistory(await FavoritesService.getWatchHistory());
-        }
-      } catch (error) {
-        console.error('Token verification/initialization failed:', error);
-        if(localStorage.getItem('token')) handleLogout(); // Logout if token is invalid
-        setError('Failed to load essential data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    initializeApp();
-  }, []);
-
-  // Effect to fetch movies whenever search, filters, or active view changes
-  useEffect(() => {
-    if (activeView === 'discover') {
-       loadMovies(1, false);
-    }
-  }, [debouncedSearchQuery, filters, activeView, loadMovies]);
+  };
 
   const loadMoreMovies = () => {
     if (!loadingMore && hasMoreMovies) {
       loadMovies(currentPage + 1, true);
     }
   };
-
-  const moviesToDisplay = useMemo(() => {
-    if (activeView === 'favorites') return favorites;
-    // Assuming watchHistory contains full movie objects or can be mapped to them
-    if (activeView === 'profile') return watchHistory.map(item => item.movie).filter(Boolean);
-    return movies;
-  }, [movies, favorites, watchHistory, activeView]);
+  
+  const filteredMovies = useMemo(() => {
+    const moviesToFilter = activeView === 'favorites' ? favorites : movies;
+    return moviesToFilter.filter(movie => {
+      const searchMatch = searchQuery ? movie.title.toLowerCase().includes(searchQuery.toLowerCase()) : true;
+      const genreMatch = filters.genre ? movie.genre_ids?.includes(parseInt(filters.genre)) : true;
+      const yearMatch = filters.year ? movie.release_date?.startsWith(filters.year) : true;
+      const ratingMatch = filters.rating ? movie.vote_average >= parseFloat(filters.rating) : true;
+      return searchMatch && genreMatch && yearMatch && ratingMatch;
+    });
+  }, [movies, favorites, activeView, searchQuery, filters]);
 
   const handleMovieClick = useCallback(async (movie) => {
     try {
       const detailedMovie = await MovieService.getMovieDetails(movie.id);
       setSelectedMovie(detailedMovie);
     } catch (error) {
-      console.error(`Error fetching movie details for ${movie.id}:`, error);
-      setSelectedMovie(movie); // Fallback to basic movie info
+      console.error(`Error loading details for movie ${movie.id}:`, error);
+      setSelectedMovie(movie);
     }
   }, []);
 
   const handleCloseModal = useCallback(() => setSelectedMovie(null), []);
   
-  const handleFilterChange = useCallback((newFilters) => {
-    setCurrentPage(1); // Reset page on new filter
-    setFilters(newFilters);
+  const handleSearch = useCallback((query) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+    setHasMoreMovies(true);
+    loadMovies(1, false);
   }, []);
+  
+  const handleFilterChange = useCallback((newFilters) => setFilters(newFilters), []);
   
   const clearFilters = useCallback(() => {
     setFilters({ genre: '', year: '', rating: '' });
     setSearchQuery('');
     setCurrentPage(1);
+    loadMovies(1, false);
   }, []);
 
   const handleAuth = async (credentials, mode) => {
@@ -181,10 +169,13 @@ function App() {
         ? await AuthService.login(credentials)
         : await AuthService.register(credentials);
       
-      localStorage.setItem('token', result.token);
+      localStorage.removeItem('favorites');
+      localStorage.removeItem('watchHistory');
+      
       setUser(result.user);
-      setFavorites([]); // Clear local state, will be fetched if needed
+      setFavorites([]);
       setWatchHistory([]);
+      localStorage.setItem('token', result.token);
       setShowAuthModal(false);
       setActiveView('discover');
     } catch (error) {
@@ -193,12 +184,18 @@ function App() {
   };
 
   const handleLogout = () => {
-    AuthService.logout(); // Centralize logout logic in the service
     setUser(null);
     setFavorites([]);
     setWatchHistory([]);
+    localStorage.removeItem('token');
+    localStorage.removeItem('favorites');
+    localStorage.removeItem('watchHistory');
     setActiveView('discover');
-    clearFilters();
+    setSearchQuery('');
+    setFilters({ genre: '', year: '', rating: '' });
+    if (activeView !== 'discover') {
+      loadMovies(1, false);
+    }
   };
 
   const toggleFavorite = async (movie) => {
@@ -206,45 +203,64 @@ function App() {
       setShowAuthModal(true);
       return;
     }
-    const isCurrentlyFavorite = favorites.some(fav => fav.id === movie.id);
-    if (isCurrentlyFavorite) {
-      await FavoritesService.removeFavorite(movie.id);
-      setFavorites(prev => prev.filter(fav => fav.id !== movie.id));
-    } else {
-      await FavoritesService.addFavorite(movie);
-      setFavorites(prev => [...prev, movie]);
+    try {
+      const isCurrentlyFavorite = favorites.some(fav => fav.id === movie.id);
+      if (isCurrentlyFavorite) {
+        await FavoritesService.removeFavorite(movie.id);
+        setFavorites(prev => prev.filter(fav => fav.id !== movie.id));
+      } else {
+        await FavoritesService.addFavorite(movie);
+        setFavorites(prev => [...prev, movie]);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
     }
   };
 
   const recordWatch = async (movieId) => {
     if (!user) return;
-    const movie = movies.find(m => m.id === movieId) || heroMovies.find(m => m.id === movieId);
-    if (movie) {
-      const newHistoryItem = await FavoritesService.recordWatch(movie);
-      setWatchHistory(prev => [newHistoryItem, ...prev.filter(item => item.movie_id !== movieId)]);
+    try {
+      const movie = movies.find(m => m.id === movieId) || 
+                   heroMovies.find(m => m.id === movieId) || 
+                   favorites.find(m => m.id === movieId);
+      
+      if (movie) {
+        const newHistoryItem = await FavoritesService.recordWatch(movie);
+        setWatchHistory(prev => [
+          newHistoryItem, 
+          ...prev.filter(item => item.movie_id !== movieId)
+        ].slice(0, 50));
+      }
+    } catch (error) {
+      console.error('Error recording watch:', error);
     }
   };
 
   const handleViewChange = (view) => {
     setActiveView(view);
     if (view !== 'discover') {
-        clearFilters();
+      setSearchQuery('');
+      setFilters({ genre: '', year: '', rating: '' });
+    } else if (activeView !== 'discover') {
+      loadMovies(1, false);
     }
   };
 
   const handlePlayTrailer = (movie) => {
-    if (movie.trailer && movie.trailer.key) {
+    if (movie.trailer) {
       window.open(`https://www.youtube.com/watch?v=${movie.trailer.key}`, '_blank');
-      if (user) recordWatch(movie.id);
+      if (user) {
+        recordWatch(movie.id);
+      }
     } else {
-      alert('Trailer not available for this movie.');
+      alert('Trailer not available for this movie');
     }
   };
 
   return (
     <div className="app">
       <Header 
-        onSearch={setSearchQuery}
+        onSearch={handleSearch}
         searchQuery={searchQuery}
         user={user}
         onAuthClick={() => setShowAuthModal(true)}
@@ -257,43 +273,73 @@ function App() {
       <main className="main-content">
         {activeView === 'discover' && (
           <>
-            <Hero movies={heroMovies} onMovieClick={handleMovieClick} isLoading={loading && !movies.length} user={user} onWatchTrailer={recordWatch}/>
-            <FilterSection filters={filters} onFilterChange={handleFilterChange} onClearFilters={clearFilters} genres={genres} />
+            <Hero 
+              movies={heroMovies} 
+              onMovieClick={handleMovieClick} 
+              isLoading={loading} 
+              user={user} 
+              onWatchTrailer={recordWatch} 
+            />
+            <FilterSection 
+              filters={filters} 
+              onFilterChange={handleFilterChange} 
+              onClearFilters={clearFilters} 
+              genres={genres} 
+            />
           </>
         )}
-
         {activeView === 'profile' && user && (
-            <UserProfile user={user} favorites={favorites} watchHistory={watchHistory} onMovieClick={handleMovieClick} onToggleFavorite={toggleFavorite} />
+          <UserProfile 
+            user={user} 
+            favorites={favorites} 
+            watchHistory={watchHistory} 
+            onMovieClick={handleMovieClick} 
+            onToggleFavorite={toggleFavorite} 
+          />
         )}
         
-        {error && !loading && (
+        {error && (
           <div className="error-message">
             <h3>⚠️ {error}</h3>
             <button onClick={() => loadMovies(1, false)}>Try Again</button>
           </div>
         )}
-        
-        {loading && moviesToDisplay.length === 0 ? <LoadingSpinner /> : (
-          <MovieGrid 
-            movies={moviesToDisplay} 
-            onMovieClick={handleMovieClick} 
-            onToggleFavorite={toggleFavorite} 
-            favorites={favorites} 
-            user={user} 
-            activeView={activeView} 
-            getGenreNames={getGenreNames}
-            isLoading={loading}
-          />
+        {loading ? <LoadingSpinner /> : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${activeView}-${searchQuery}-${JSON.stringify(filters)}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <MovieGrid 
+                movies={filteredMovies} 
+                onMovieClick={handleMovieClick} 
+                onToggleFavorite={toggleFavorite} 
+                favorites={favorites} 
+                user={user} 
+                activeView={activeView} 
+                getGenreNames={getGenreNames}
+              />
+              
+              {activeView === 'discover' && hasMoreMovies && !loadingMore && (
+                <div className="load-more-container">
+                  <button className="load-more-btn" onClick={loadMoreMovies} disabled={loadingMore}>
+                    {loadingMore ? 'Loading...' : 'Load More Movies'}
+                  </button>
+                </div>
+              )}
+              {loadingMore && <div className="loading-more"><LoadingSpinner /></div>}
+              {filteredMovies.length === 0 && !loading && !error && (
+                <div className="no-results">
+                  <h3>No movies found</h3>
+                  <p>Try adjusting your search or filters.</p>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         )}
-        
-        {activeView === 'discover' && hasMoreMovies && !loadingMore && movies.length > 0 && (
-          <div className="load-more-container">
-            <button className="load-more-btn" onClick={loadMoreMovies} disabled={loadingMore}>
-              {loadingMore ? 'Loading...' : 'Load More Movies'}
-            </button>
-          </div>
-        )}
-        {loadingMore && <div className="loading-more"><LoadingSpinner /></div>}
       </main>
 
       <AnimatePresence>
