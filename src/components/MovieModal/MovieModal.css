@@ -1,4 +1,4 @@
-/* src/components/MovieModal/MovieModal.css - PREMIUM PROFESSIONAL (REVISED V3 - DUAL COLUMN) */
+/* src/components/MovieModal/MovieModal.css - PREMIUM PROFESSIONAL (REVISED V4 - INTERACTIVE GRID) */
 .movie-modal-overlay {
   position: fixed;
   inset: 0;
@@ -125,19 +125,12 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 .modal-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 3.5rem;
-  font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
+  font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700;
+  line-height: 1.1; margin-bottom: 0.5rem; color: var(--text-primary);
   text-shadow: 0 2px 20px rgba(0,0,0,0.5);
 }
 .tagline {
-  font-style: italic;
-  font-size: 1.1rem;
-  color: var(--blue-accent);
-  margin-bottom: 1.5rem;
+  font-style: italic; font-size: 1.1rem; color: var(--blue-accent); margin-bottom: 1.5rem;
 }
 .modal-meta {
   display: flex; flex-wrap: wrap; align-items: center;
@@ -147,10 +140,8 @@
 .meta-item { display: flex; align-items: center; gap: 0.5rem; }
 .meta-item.rating { color: #f59e0b; font-weight: 700; }
 .meta-item.status {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1); padding: 0.2rem 0.6rem;
+  border-radius: 6px; color: var(--text-primary);
 }
 .genres { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 .genre-tag {
@@ -159,32 +150,68 @@
   font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-.right-pane-body {
-  padding-top: 1.5rem;
-  flex-grow: 1;
-}
+.right-pane-body { padding-top: 1.5rem; flex-grow: 1; }
 .right-pane-body h3 {
   font-size: 1.2rem; margin-bottom: 1rem; color: var(--text-primary);
 }
 .movie-overview {
   color: var(--text-secondary); line-height: 1.7; font-size: 1rem; margin-bottom: 2rem;
 }
-.cast-highlights { display: flex; flex-direction: column; gap: 0.75rem; }
-.cast-member-highlight {
-  display: flex; align-items: center; gap: 1rem;
-  padding: 0.75rem; border-radius: 10px;
-  background: transparent; transition: background 0.3s;
+
+/* --- NEW CAST GRID STYLES --- */
+.cast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
-.cast-member-highlight:hover { background: rgba(30, 30, 45, 0.9); }
-.cast-photo-highlight {
-  width: 50px; height: 50px; border-radius: 50%; object-fit: cover;
+
+.cast-member {
+  text-align: center;
+  transition: transform 0.3s ease;
 }
+.cast-member:hover {
+  transform: scale(1.05);
+}
+
+.cast-photo {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 0.75rem;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
 .cast-name { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
 .cast-character { font-size: 0.8rem; color: var(--text-secondary); }
-.cast-member-highlight.view-all {
-  color: var(--blue-secondary); font-weight: 600; cursor: pointer;
+
+.view-cast-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
-.cast-member-highlight.view-all svg { font-size: 1.5rem; }
+.view-cast-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+.view-cast-btn svg {
+  transition: transform 0.3s ease;
+}
+.view-cast-btn.expanded svg {
+  transform: rotate(180deg);
+}
 
 /* Custom scrollbar for right pane */
 .modal-right-pane::-webkit-scrollbar { width: 8px; }
@@ -196,13 +223,11 @@
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
-  .movie-modal { flex-direction: column; height: auto; max-height: 90vh; }
-  .modal-content-wrapper { flex-direction: column; }
+  .modal-content-wrapper { flex-direction: column; overflow-y: auto; }
   .modal-left-pane { flex: 0 0 auto; width: 100%; }
   .modal-right-pane { overflow-y: visible; }
   .modal-title { font-size: 2.5rem; }
 }
-
 @media (max-width: 640px) {
   .movie-modal-overlay { padding: 0; }
   .movie-modal { border-radius: 0; height: 100vh; max-height: 100vh; }

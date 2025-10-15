@@ -1,5 +1,5 @@
-// src/components/MovieModal/MovieModal.jsx - PREMIUM PROFESSIONAL (REVISED V3 - DUAL COLUMN)
-import React from 'react';
+// src/components/MovieModal/MovieModal.jsx - PREMIUM PROFESSIONAL (REVISED V4 - INTERACTIVE GRID)
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiX, 
@@ -8,7 +8,7 @@ import {
   FiClock, 
   FiHeart, 
   FiPlay,
-  FiChevronRight
+  FiChevronDown
 } from 'react-icons/fi';
 import './MovieModal.css';
 
@@ -20,6 +20,9 @@ const MovieModal = ({
   user,
   onWatchTrailer 
 }) => {
+  const [isCastExpanded, setIsCastExpanded] = useState(false);
+
+  const toggleCastView = () => setIsCastExpanded(!isCastExpanded);
 
   const handleFavoriteClick = (e) => {
     e.stopPropagation();
@@ -50,9 +53,11 @@ const MovieModal = ({
   const getReleaseYear = (date) => {
     return date ? new Date(date).getFullYear() : 'N/A';
   };
-
+  
   const posterImg = movie.poster_path ? `https://image.tmdb.org/t/p/w780${movie.poster_path}` : '/api/placeholder/500/750?text=No+Image';
   const backdropImg = movie.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}` : posterImg;
+
+  const castToShow = isCastExpanded ? movie.cast : movie.cast?.slice(0, 6);
 
   return (
     <AnimatePresence>
@@ -112,9 +117,7 @@ const MovieModal = ({
                 <h1 className="modal-title">{movie.title}</h1>
                 <p className="tagline">{movie.tagline}</p>
                 <div className="modal-meta">
-                  <span className="meta-item rating">
-                    <FiStar /> {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
-                  </span>
+                  <span className="meta-item rating"><FiStar /> {movie.vote_average?.toFixed(1) || 'N/A'}</span>
                   <span className="meta-item"><FiCalendar /> {getReleaseYear(movie.release_date)}</span>
                   <span className="meta-item"><FiClock /> {formatRuntime(movie.runtime)}</span>
                   <span className="meta-item status">{movie.status}</span>
@@ -130,28 +133,37 @@ const MovieModal = ({
                 <h3>Synopsis</h3>
                 <p className="movie-overview">{movie.overview || 'No overview available.'}</p>
                 
-                <h3>Cast Highlights</h3>
-                <div className="cast-highlights">
-                  {movie.cast?.slice(0, 5).map(person => (
-                    <div key={person.cast_id} className="cast-member-highlight">
-                       <img 
-                        src={person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : '/api/placeholder/200/200?text=N/A'}
-                        alt={person.name}
-                        className="cast-photo-highlight"
-                      />
-                      <div className="cast-info-highlight">
-                        <p className="cast-name">{person.name}</p>
-                        <p className="cast-character">{person.character}</p>
-                      </div>
-                    </div>
-                  ))}
-                  {movie.cast && movie.cast.length > 5 && (
-                    <div className="cast-member-highlight view-all">
-                       <FiChevronRight />
-                       <span>View Full Cast</span>
-                    </div>
+                <h3>Cast</h3>
+                <motion.div layout className="cast-section">
+                  <div className="cast-grid">
+                    {castToShow?.map(person => (
+                       <motion.div 
+                          key={person.cast_id} 
+                          className="cast-member"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                       >
+                          <img 
+                            src={person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : '/api/placeholder/200/200?text=N/A'}
+                            alt={person.name}
+                            className="cast-photo"
+                          />
+                          <div className="cast-info">
+                            <p className="cast-name">{person.name}</p>
+                            <p className="cast-character">{person.character}</p>
+                          </div>
+                       </motion.div>
+                    ))}
+                  </div>
+
+                  {movie.cast && movie.cast.length > 6 && (
+                    <button onClick={toggleCastView} className={`view-cast-btn ${isCastExpanded ? 'expanded' : ''}`}>
+                      <span>{isCastExpanded ? 'Show Less' : 'View All Cast'}</span>
+                      <FiChevronDown />
+                    </button>
                   )}
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           </div>
