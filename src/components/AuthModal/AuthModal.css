@@ -1,11 +1,11 @@
-/* src/components/AuthModal/AuthModal.css */
+/* src/components/AuthModal/AuthModal.css - CORRECTED BLUE THEME */
 .auth-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 10, 10, 0.9);
+  background: rgba(10, 10, 15, 0.9);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -15,14 +15,14 @@
 }
 
 .auth-modal {
-  background: var(--card-bg);
+  background: var(--modal-bg, var(--card-bg));
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 20px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
   padding: 2.5rem;
   width: 100%;
   max-width: 450px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-dark);
   position: relative;
 }
 
@@ -34,7 +34,7 @@
 }
 
 .auth-header h2 {
-  background: var(--gradient-gold);
+  background: var(--gradient-blue);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -46,7 +46,7 @@
 .close-btn {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
@@ -55,8 +55,8 @@
 }
 
 .close-btn:hover {
-  color: var(--gold-primary);
-  background: rgba(212, 175, 55, 0.1);
+  color: var(--blue-primary);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .auth-form {
@@ -74,7 +74,7 @@
 .input-icon {
   position: absolute;
   left: 1rem;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: 1.2rem;
   z-index: 1;
 }
@@ -82,8 +82,8 @@
 .auth-input {
   width: 100%;
   padding: 1rem 1rem 1rem 3rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--secondary-dark);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
   color: var(--text-primary);
   font-size: 1rem;
@@ -92,12 +92,12 @@
 
 .auth-input:focus {
   outline: none;
-  border-color: var(--gold-primary);
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 .auth-input::placeholder {
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
 }
 
 .password-toggle {
@@ -114,8 +114,8 @@
 }
 
 .password-toggle:hover {
-  color: var(--gold-primary);
-  background: rgba(212, 175, 55, 0.1);
+  color: var(--blue-primary);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .auth-error {
@@ -129,21 +129,22 @@
 }
 
 .auth-submit-btn {
-  background: var(--gradient-gold);
-  color: var(--primary-dark);
+  background: var(--gradient-blue);
+  color: var(--text-primary);
   border: none;
   border-radius: 12px;
   padding: 1rem 2rem;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 1rem;
+  box-shadow: var(--shadow-blue);
 }
 
 .auth-submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+  box-shadow: var(--shadow-hover);
 }
 
 .auth-submit-btn:disabled {
@@ -165,15 +166,17 @@
 .auth-switch-btn {
   background: none;
   border: none;
-  color: var(--gold-primary);
+  color: var(--blue-primary);
   cursor: pointer;
   font-weight: 600;
   text-decoration: underline;
   transition: all 0.3s ease;
+  padding: 0;
+  font-size: inherit;
 }
 
 .auth-switch-btn:hover {
-  color: var(--gold-accent);
+  color: var(--blue-accent);
 }
 
 @media (max-width: 480px) {
