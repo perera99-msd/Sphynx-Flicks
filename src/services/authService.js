@@ -1,16 +1,30 @@
-// src/services/authService.js
+// src/services/authService.js - UPDATED
 import axios from 'axios';
 
-// ✅ Use your actual backend URL with /api prefix
 const API_BASE_URL = 'https://movie-app-backend.msdperera99.workers.dev/api';
-
-// For local development:
-// const API_BASE_URL = 'http://localhost:8787/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
 });
+
+// Add response interceptor for better error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ECONNABORTED') {
+      error.message = 'Request timeout. Please check your connection.';
+    } else if (error.response) {
+      // Server responded with error status
+      const serverError = error.response.data?.error || 'Server error occurred';
+      error.message = serverError;
+    } else if (error.request) {
+      // Request made but no response received
+      error.message = 'Network error. Please check your connection.';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const AuthService = {
   async login(credentials) {
@@ -20,11 +34,8 @@ export const AuthService = {
       console.log('Login successful');
       return response.data;
     } catch (error) {
-      console.error('Login error:', error.response?.data || error.message);
-      const errorMessage = error.response?.data?.error || 
-                          error.message || 
-                          'Login failed. Please check your connection.';
-      throw new Error(errorMessage);
+      console.error('Login error:', error.message);
+      throw new Error(error.message);
     }
   },
 
@@ -35,11 +46,8 @@ export const AuthService = {
       console.log('Registration successful');
       return response.data;
     } catch (error) {
-      console.error('Registration error:', error.response?.data || error.message);
-      const errorMessage = error.response?.data?.error || 
-                          error.message || 
-                          'Registration failed. Please try again.';
-      throw new Error(errorMessage);
+      console.error('Registration error:', error.message);
+      throw new Error(error.message);
     }
   },
 
@@ -52,7 +60,7 @@ export const AuthService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Token verification error:', error.response?.data || error.message);
+      console.error('Token verification error:', error.message);
       throw new Error('Token verification failed');
     }
   }
