@@ -1,12 +1,20 @@
 name = "movie-app-backend"
-compatibility_date = "2024-09-23"
-main = "src/index.js"
+compatibility_date = "2023-10-01"
+compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding = "DB"
 database_name = "movie-app-db"
 database_id = "93db578a-9032-42ee-a9b2-f4ff35e4cb05"
 
-[vars]
-JWT_SECRET = "default-secret-change-in-production"
+[env.production.vars]
 TMDB_API_KEY = "e723914bacd3f287ba6464803d8f41ce"
+
+# Add these lines for proper MIME types
+[site]
+bucket = "./dist"
+entry-point = "workers-site"
+
+[[routes]]
+pattern = "/*"
+script_name = "movie-app-backend"
