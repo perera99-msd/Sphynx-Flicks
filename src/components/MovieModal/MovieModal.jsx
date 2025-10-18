@@ -1,4 +1,4 @@
-// src/components/MovieModal/MovieModal.jsx - PREMIUM PROFESSIONAL (REVISED V4 - INTERACTIVE GRID)
+// src/components/MovieModal/MovieModal.jsx - UPDATED WITH STREAMING
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -10,6 +10,7 @@ import {
   FiPlay,
   FiChevronDown
 } from 'react-icons/fi';
+import StreamingLinks from '../StreamingLinks/StreamingLinks';
 import './MovieModal.css';
 
 const MovieModal = ({ 
@@ -164,6 +165,11 @@ const MovieModal = ({
                     </button>
                   )}
                 </motion.div>
+
+                {/* STREAMING LINKS SECTION */}
+                <div className="streaming-section">
+                  <StreamingLinks movieId={movie.id} movieTitle={movie.title} />
+                </div>
               </div>
             </motion.div>
           </div>

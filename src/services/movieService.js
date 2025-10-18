@@ -1,4 +1,4 @@
-// src/services/movieService.js
+// src/services/movieService.js - UPDATED WITH STREAMING
 import axios from 'axios';
 
 const API_BASE_URL = 'https://movie-app-backend.msdperera99.workers.dev/api';
@@ -50,7 +50,7 @@ export const MovieService = {
 
   async getMovieDetails(movieId) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/movies/${movieId}`);
+      const response = await axios.get(`${API_BASE_URL}/movies/${movieId}/details`);
       return response.data;
     } catch (error) {
       console.error('Error fetching movie details:', error);
@@ -60,13 +60,46 @@ export const MovieService = {
 
   async getMovieTrailer(movieId) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/movies/${movieId}`);
+      const response = await axios.get(`${API_BASE_URL}/movies/${movieId}/details`);
       const movieData = response.data;
-      return movieData.trailer || null;
+      
+      // Extract trailer from videos
+      if (movieData.videos && movieData.videos.results) {
+        const trailer = movieData.videos.results.find(
+          video => video.type === 'Trailer' && video.site === 'YouTube'
+        );
+        return trailer || null;
+      }
+      return null;
     } catch (error) {
       console.error('Error fetching movie trailer:', error);
       return null;
     }
+  },
+
+  // NEW: Get streaming providers
+  async getStreamingProviders(movieId) {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/movies/${movieId}/streaming`);
+      const data = response.data;
+      
+      // Format the data for easier use
+      return this.formatStreamingData(data);
+    } catch (error) {
+      console.error('Error fetching streaming providers:', error);
+      return null;
+    }
+  },
+
+  formatStreamingData(streamingData) {
+    if (!streamingData) return null;
+
+    return {
+      flatrate: streamingData.flatrate || [], // Subscription services (Netflix, Prime)
+      free: streamingData.free || [],         // Free with ads (Tubi, Pluto TV)
+      rent: streamingData.rent || [],         // Rent (Amazon, Apple TV)
+      buy: streamingData.buy || []            // Purchase
+    };
   },
 
   async getTrendingMovies() {
