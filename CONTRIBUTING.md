@@ -1,9 +1,9 @@
 # Contributing to Sphynx Flicks
 
 Thank you for taking the time to contribute! 🎉  
-Every contribution — big or small — is welcome and appreciated.
+Every contribution — big or small — is valued and appreciated.
 
-Please read this guide before submitting issues or pull requests.
+Please read this guide carefully before submitting issues or pull requests.
 
 ---
 
